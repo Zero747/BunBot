@@ -1,0 +1,2 @@
+# BunBot
+Discord moderation bunny
