@@ -3,7 +3,7 @@
 // MD5 is checked against it. Likewise, whenever a file is saved, its MD5 is saved as well. If a file appears corrupt, then the opposite dyad file is
 // loaded. If both files are corrupt, the program throws an exception.
 //
-
+// EMIKO
 
 using System;
 using System.IO;

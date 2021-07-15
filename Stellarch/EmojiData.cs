@@ -1,7 +1,7 @@
 ﻿// EmojiData.cs
 // Casts a unicode string or a discord emote id to an DiscordEmoji type.
 //
-
+// EMIKO
 
 using DSharpPlus;
 using DSharpPlus.Entities;

@@ -1,7 +1,7 @@
 ﻿// ReminderSystem.cs
 // A portion of the reminder system containing everything needed for processing reminders from ReminderCommands.cs
 //  
-
+// EMIKO
 
 using System;
 using System.Collections;
@@ -657,6 +657,7 @@ namespace BigSister.Reminders
                     case "minutes":
                     case "min":
                     case "mins":
+                    case "m":
                         dto = dto.AddMinutes(measure);
                         break;
                     default:

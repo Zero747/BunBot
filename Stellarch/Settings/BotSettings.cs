@@ -1,7 +1,7 @@
 ﻿// BotSettings.cs
 // A static class for every bot setting including their default values.
 //
-
+// EMIKO.
 
 using System;
 using System.Collections.Generic;
@@ -14,9 +14,8 @@ namespace BigSister.Settings
         /// <summary>Default bot settings.</summary>
         public static BotSettings Default = new BotSettings();
 
-        /// <summary>Default channel, Rimworld #general.</summary>
-        /// Not that it really matters, bot was fine without access to the channel
-        const ulong DEFAULT_CHANNEL = 214523379766525963;
+        /// <summary>Default channel, FDS: #dont-ever-delete.</summary>
+        const ulong DEFAULT_CHANNEL = 564290158078197781;
 
         public BotSettings() { }
 

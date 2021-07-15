@@ -5,7 +5,7 @@
 //  class UserPermissions - contains information about a specific user's permissions based on what is recognized by the bot
 //  static class Permissions - contains methods for checking if a user has desired permissions.
 //
-
+// EMIKO
 
 using System;
 using System.Collections.Generic;

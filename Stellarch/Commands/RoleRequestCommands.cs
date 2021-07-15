@@ -6,7 +6,7 @@
 //  !role-message-new <channel> <content> - Creates a new message in a channel.
 //  !role-message-edit <channel> <messageId> <content> - Edits a currently existing message.
 //
-
+// EMIKO
 
 using System.Threading.Tasks;
 using DSharpPlus.CommandsNext;

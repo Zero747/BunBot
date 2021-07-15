@@ -1,7 +1,7 @@
 ﻿// MentionSnooper.cs
 // Receives message creation and update events and looks for mentions in them, assuming they're sent in the action logs channel.
 //
-
+// EMIKO
 
 using BigSister.ChatObjects;
 using DSharpPlus;

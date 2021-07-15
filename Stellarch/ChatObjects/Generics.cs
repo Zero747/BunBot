@@ -1,7 +1,7 @@
 ﻿// Generics.cs
 // Contains generic chat objects and methods for generating templates.
 //
-
+// EMIKO
 
 using System;
 using System.Linq;
@@ -24,14 +24,14 @@ namespace BigSister.ChatObjects
         public static DiscordColor NegativeColor = DiscordColor.Red;
         public static DiscordColor NeutralColor = DiscordColor.MidnightBlue;
 
-        public const string URL_SPEECH_BUBBLE = @"https://i.imgur.com/NAHI4h3.png";
-        public const string URL_FILTER_ADD = @"https://i.imgur.com/cVeWPNz.png";
-        public const string URL_FILTER_SUB = @"https://i.imgur.com/kNdFBoK.png";
-        public const string URL_FILTER_BUBBLE = @"https://i.imgur.com/TAaRDgI.png";
-        public const string URL_FILTER_GENERIC = @"https://i.imgur.com/58C8Noh.png";
-        public const string URL_REMINDER_GENERIC = @"https://i.imgur.com/Ya1Lu6e.png";
-        public const string URL_REMINDER_EXCLAIM = @"https://i.imgur.com/NUCrbSl.png";
-        public const string URL_REMINDER_DELETED = @"https://i.imgur.com/OnTaJdd.png";
+        public const string URL_SPEECH_BUBBLE = @"https://i.imgur.com/o304dw9.png";
+        public const string URL_FILTER_ADD = @"https://i.imgur.com/yrOMSae.png";
+        public const string URL_FILTER_SUB = @"https://i.imgur.com/jMcIUkj.png";
+        public const string URL_FILTER_BUBBLE = @"https://i.imgur.com/RxsCYFc.png";
+        public const string URL_FILTER_GENERIC = @"https://i.imgur.com/dePUaat.png";
+        public const string URL_REMINDER_GENERIC = @"https://i.imgur.com/FcpwjEm.png";
+        public const string URL_REMINDER_EXCLAIM = @"https://i.imgur.com/4BmoFjQ.png";
+        public const string URL_REMINDER_DELETED = @"https://i.imgur.com/IqG56C4.png";
 
         public const string DateFormat = @"yyyy-MMM-dd HH:mm";
 

@@ -1,7 +1,7 @@
 ﻿// Reminder.cs
 // Contains a struct that defines a Reminder.
 //
-
+// EMIKO
 
 using System;
 

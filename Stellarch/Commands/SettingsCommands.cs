@@ -1,7 +1,7 @@
 ﻿// SettingsCommands.cs
 // Contains commands to set options that are saved in the plaintext save file.
 //
-
+// EMIKO
 
 using BigSister.ChatObjects;
 using DSharpPlus.CommandsNext;
@@ -251,7 +251,7 @@ namespace BigSister.Commands
                     channel: ctx.Channel,
                     mention: ctx.Member.Mention,
                     title: $"Rimboard {a}",
-                    valueName: @"rimboard",
+                    valueName: @"Rimboard",
                     newVal: a);
             }
         }

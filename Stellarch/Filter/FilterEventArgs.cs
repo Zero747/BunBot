@@ -1,7 +1,7 @@
 ﻿// FilterEventArgs.cs
 // Contains arguments detailing the bad words found and other context in a filter event.
 //
-
+// EMIKO
 
 using DSharpPlus.Entities;
 using System;

@@ -1,7 +1,7 @@
 ﻿// Identity.cs
 // Contains information about the bot's identity, notably its authkey and webhooks.
 //
-
+// EMIKO.
 
 using System;
 using System.Collections.Generic;
