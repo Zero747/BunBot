@@ -1,6 +1,6 @@
 [
   {
-    "RegexString": "^\\*hugs <@!?669347771312111619>\\*$",
+    "RegexString": "^(\\*|_)hugs <@!?816655819134599179>(\\*|_)$",
     "Response": "*cuddles with {0}.*",
     "Cooldown": 900000
   },
@@ -11,17 +11,17 @@
   },
   {
     "RegexString": "^Floppy,? (?:you're|you are) (?:cute|adorable|pretty|beautiful)[.!?]?$",
-    "Response": "Um.......................yeathanks https://i.imgur.com/YS9bQt4.png",
+    "Response": "Um.......................yeathanks https://i.imgur.com/nmtZMc7.png",
     "Cooldown": 900000
   },
   {
     "RegexString": "^Floppy,? (?:I love your ears|your ears are so long)[.!?]?$",
-    "Response": "...whyareyoulookingatmyears?????... https://i.imgur.com/DB9qvJM.png",
+    "Response": "...whyareyoulookingatmyears?????... https://i.imgur.com/aa4PFgD.png",
     "Cooldown": 900000
   },
   {
     "RegexString": "^Floppy,? (?:we're|we are) being raided[.!?]?$",
-    "Response": "Target practice! https://i.imgur.com/lpP7E4S.png",
+    "Response": "Target practice! https://i.imgur.com/s3RED4H.png",
     "Cooldown": 900000
   },
   {
@@ -44,12 +44,12 @@
   },
   {
     "RegexString": "^!vore$",
-    "Response": "https://i.imgur.com/HFVQYlh.png?1",
+    "Response": "https://i.imgur.com/yrs10DR.png",
     "Cooldown": 43200000
   },
   {
     "RegexString": "^!lizard$",
-    "Response": "https://i.imgur.com/e2w5bBk.png",
+    "Response": "https://i.imgur.com/x4kiB9N.png",
     "Cooldown": 900000
   }
 ]
