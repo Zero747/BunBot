@@ -1,7 +1,7 @@
 ﻿// RoleRequestSystem.cs
 // One piece of a partial class, handling mostly the backend such as queries and event handlers.
 //
-// Emiko
+
 
 using System;
 using System.Collections.Generic;

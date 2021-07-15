@@ -6,7 +6,7 @@
 // (\-/)
 //(='.'=)
 //(")-(")o
-// EMIKO
+
 
 using System.Threading.Tasks;
 using DSharpPlus.CommandsNext;

@@ -1,7 +1,7 @@
 ﻿// FilterSystem.Excludes.cs
 // This is a system that goes with the word filter system to exclude words, preventing them from triggering the word filter.
 //
-// EMIKO
+
 
 using System;
 using System.Linq;

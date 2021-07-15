@@ -3,7 +3,7 @@
 // 1) Receives all message creation/edit events and filters them.
 // 2) Raises events whenever the filter is triggered.
 //
-// EMIKO
+
 
 using System.Collections.Generic;
 using System.Text;

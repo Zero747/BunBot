@@ -1,7 +1,7 @@
 ﻿// AuditSystem.cs
 // Contains methods for logging to a simple plaintext file on the disk.
 //
-// EMIKO
+
 
 using System;
 using System.IO;

@@ -4,7 +4,7 @@
 //  !reminder remove/delete <reminderId>
 //  !reminder list
 //
-// EMIKO
+
 
 using System.Threading.Tasks;
 using DSharpPlus.CommandsNext;

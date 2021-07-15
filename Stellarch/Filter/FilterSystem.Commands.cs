@@ -4,7 +4,6 @@
 // 2) Contains methods for querying the database for relevant information.
 // 3) Updating the regex array whenever the cache updates.
 //
-// EMIKO
 
 using System;
 using System.Collections.Generic;

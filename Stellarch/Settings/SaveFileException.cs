@@ -1,7 +1,7 @@
 ﻿// SaveFileException.cs
 // An exception for when issues occur with the SaveFile system.
 //
-// EMIKO
+
 
 /*
  * |￣￣￣￣￣￣￣￣|

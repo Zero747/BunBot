@@ -1,7 +1,7 @@
 ﻿// MinimumRole.cs
 // This is an attributes for commands to use to signify what role is required, minimum, in order to use the command.
 //
-// EMIKO
+
 
 using System;
 

@@ -1,7 +1,7 @@
 ﻿// RoleRequestSystem.Commands.cs
 // One piece of a partial class for the role request system, specifically the piece handling commands.
 //
-// EMIKO
+
 
 using System;
 using System.Linq;

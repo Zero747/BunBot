@@ -1,7 +1,7 @@
 ﻿// GenericResponses.cs
 // These are full generic, standardized responses for situations.
 //
-// EMIKO
+
 
 using System;
 using System.Collections.Generic;

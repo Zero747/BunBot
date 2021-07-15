@@ -1,7 +1,7 @@
 ﻿// WebhookInfo.cs
 // Contains information about a webhook including its id and token.
 //
-// EMIKO
+
 
 using System;
 using System.Collections.Generic;
