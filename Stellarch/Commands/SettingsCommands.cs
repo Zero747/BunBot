@@ -251,7 +251,7 @@ namespace BigSister.Commands
                     channel: ctx.Channel,
                     mention: ctx.Member.Mention,
                     title: $"Rimboard {a}",
-                    valueName: @"warn snooper",
+                    valueName: @"rimboard",
                     newVal: a);
             }
         }
