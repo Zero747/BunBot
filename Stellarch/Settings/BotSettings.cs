@@ -14,9 +14,9 @@ namespace BigSister.Settings
         /// <summary>Default bot settings.</summary>
         public static BotSettings Default = new BotSettings();
 
-        /// <summary>Default channel, FDS: #dont-ever-delete.</summary>
-        /// I have it sent to a channel in my development server.
-        const ulong DEFAULT_CHANNEL = 564290158078197781;
+        /// <summary>Default channel, Rimworld #general.</summary>
+        /// Not that it really matters, bot was fine without access to the channel
+        const ulong DEFAULT_CHANNEL = 214523379766525963;
 
         public BotSettings() { }
 
@@ -54,13 +54,13 @@ namespace BigSister.Settings
         public ulong RimboardChannelId = DEFAULT_CHANNEL;
         /// <summary>Webhook ID of the Rimboard channel.</summary>
         /// I have it set to a webhook in my development server.
-        public ulong RimboardWebhookId = 864991491741843487;
+        public ulong RimboardWebhookId = 865082916572495903;
         /// <summary>The Rimboard's pinning emote.</summary>
         public EmojiData RimboardEmoticon = new EmojiData(432227067313127424);
         /// <summary>Number of reactions needed to repost a message to Rimboard.</summary>
-        public int RimboardReactionsNeeded = 3;
+        public int RimboardReactionsNeeded = 5;
         /// <summary>Number of reactions needed to pin a message in Rimboard.</summary>
-        public int RimboardPinReactionsNeeded = 5;
+        public int RimboardPinReactionsNeeded = 10;
 
         // ----------------
         // FunStuff
