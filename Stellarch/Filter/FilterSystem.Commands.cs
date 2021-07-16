@@ -317,7 +317,7 @@ namespace BigSister.Filter
                     embedbase:
                         Generics.GenericEmbedTemplate(
                             color: Generics.NeutralColor,
-                            thumbnail: Generics.URL_FILTER_GENERIC)) as Page[];
+                            thumbnail: Generics.URL_FILTER_GENERIC)).ToArray();
             }
             else
             {   // No items, make blank variable.
