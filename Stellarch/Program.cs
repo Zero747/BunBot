@@ -4,7 +4,7 @@
 //  - A space to load the settings before initiating the bot. 
 //  - Initiating the auditing system so we can immediately start auditing when the bot starts up.
 //
-// EMIKO
+
 
 #define DEBUG
 

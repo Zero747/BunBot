@@ -1,7 +1,7 @@
 ﻿// Generics.cs
 // Contains generic chat objects and methods for generating templates.
 //
-// EMIKO
+
 
 using System;
 using System.Linq;

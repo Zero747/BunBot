@@ -1,7 +1,7 @@
 ﻿// ReminderSystem.cs
 // A portion of the reminder system containing everything needed for processing reminders from ReminderCommands.cs
 //  
-// EMIKO
+
 
 using System;
 using System.Collections;

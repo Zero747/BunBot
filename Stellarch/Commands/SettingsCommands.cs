@@ -1,7 +1,7 @@
 ﻿// SettingsCommands.cs
 // Contains commands to set options that are saved in the plaintext save file.
 //
-// EMIKO
+
 
 using BigSister.ChatObjects;
 using DSharpPlus.CommandsNext;

@@ -1,7 +1,7 @@
 ﻿// BotSettings.cs
 // A static class for every bot setting including their default values.
 //
-// EMIKO.
+
 
 using System;
 using System.Collections.Generic;
