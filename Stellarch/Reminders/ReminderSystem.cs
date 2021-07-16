@@ -47,7 +47,7 @@ namespace BigSister.Reminders
         /// <summary>The date recognition Regex.</summary>
         // It groups every number/time unit pairing "(number)+(time unit)" into a group. 
         static readonly Regex DateRegex
-            = new Regex(@"(\d+)\s?(months?|days?|d|weeks?|wks?|w|hours?|hrs?|h|minutes?|mins?)",
+            = new Regex(@"(\d+)\s?(months?|days?|d|weeks?|wks?|w|hours?|hrs?|h|minutes?|mins?|m)",
                 RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.Singleline);
         public static async Task AddReminder(CommandContext ctx, string args)
         {   // Firstly get all the matches.
