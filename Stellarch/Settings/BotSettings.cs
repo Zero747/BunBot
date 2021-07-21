@@ -29,6 +29,12 @@ namespace BigSister.Settings
         public ulong FilterChannelId = DEFAULT_CHANNEL;
 
         // ----------------
+        // Mute
+
+        /// <summary>Maximum mute time allowed in months.</summary>
+        public int MaxMuteTimeMonths = 2;
+
+        // ----------------
         // Reminder
 
         /// <summary>Maximum reminder time allowed in months.</summary>
