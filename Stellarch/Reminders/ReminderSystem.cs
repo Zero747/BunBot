@@ -297,7 +297,7 @@ namespace BigSister.Reminders
                 color: Generics.PositiveColor,
                 description: Generics.PositiveDirectResponseTemplate(
                     mention: ctx.Member.Mention,
-                    @"I able to remove the reminder you gave me!"),
+                    @"I was able to remove the reminder you gave me!"),
                 thumbnail: Generics.URL_REMINDER_DELETED,
                 title: @"Removed reminder"));
 
