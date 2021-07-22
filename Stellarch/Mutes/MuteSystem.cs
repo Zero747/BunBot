@@ -207,7 +207,7 @@ namespace BigSister.Mutes
 
                 // add muted role to listed user
                 DiscordMember member = await ctx.Guild.GetMemberAsync(mute.User);
-                DiscordRole role = ctx.Guild.GetRole(Program.Settings.MuteRoleID);
+                DiscordRole role = ctx.Guild.GetRole(Program.Settings.MuteRoleID[mute.Guild]); //TODO need a better way to get muted role ID
                 await member.GrantRoleAsync(role);
 
                 // Let's build the command.
@@ -583,7 +583,7 @@ namespace BigSister.Mutes
                     //TODO remove muted role from users
                     DiscordGuild guild = await Program.BotClient.GetGuildAsync(mute.Guild);
                     DiscordMember member = await guild.GetMemberAsync(mute.User);
-                    DiscordRole role = guild.GetRole(Program.Settings.MuteRoleID);
+                    DiscordRole role = guild.GetRole(Program.Settings.MuteRoleID[mute.Guild]);
 
 
                     tasks[i + 1] = (await Program.BotClient.GetChannelAsync(Program.Settings.ActionChannelId))

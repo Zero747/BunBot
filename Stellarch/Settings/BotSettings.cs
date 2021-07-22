@@ -33,7 +33,10 @@ namespace BigSister.Settings
 
         /// <summary>Maximum mute time allowed in months.</summary>
         public int MaxMuteTimeMonths = 2;
-        public ulong MuteRoleID = 778929358491353138; //Test server muted
+        public Dictionary<ulong, ulong> MuteRoleID = new Dictionary<ulong, ulong>(){
+            {564290157524680716, 778929358491353138}, //dev server
+            {214523379766525963, 793897525509095477} //rimworld discord
+            };
         // ----------------
         // Reminder
 
