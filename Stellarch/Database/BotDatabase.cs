@@ -156,6 +156,22 @@ namespace BigSister.Database
                 command.ExecuteNonQuery();
 
                 // --------------------------------
+                // Mute table.
+
+                command.CommandText =
+                    @"
+                        CREATE TABLE `Mutes` (
+	                        `Id`            TEXT    NOT NULL, -- Snowflake of the original message that created the mute.
+	                        `UserId`        TEXT    NOT NULL, -- Snowflake of muted user
+	                        `Message`       TEXT            , -- mute reason message
+	                        `TriggerTime`   INTEGER NOT NULL, -- unmute trigger timestamp in minutes
+                            `Guild`         TEXT    NOT NULL  -- Guild (server) in which user was muted.
+                        );
+                    ";
+
+                command.ExecuteNonQuery();
+
+                // --------------------------------
                 // Reminder table.
 
                 command.CommandText =

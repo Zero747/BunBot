@@ -33,7 +33,7 @@ namespace BigSister.Settings
 
         /// <summary>Maximum mute time allowed in months.</summary>
         public int MaxMuteTimeMonths = 2;
-
+        public ulong MuteRoleID = 778929358491353138; //Test server muted
         // ----------------
         // Reminder
 

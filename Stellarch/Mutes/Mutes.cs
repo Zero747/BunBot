@@ -19,50 +19,37 @@ namespace BigSister.Mutes
                 user:          default,
                 text:          default,
                 time:          default,
-                channel:       default,
-                usersToNotify: default);
+                guild:         default);
 
         /// <summary>The original message id.</summary>
         public string OriginalMessageId { get; }
-        /// <summary>User who scheduled the mute.</summary>
+        /// <summary>Muted User</summary>
         public ulong User { get; }
         /// <summary>Text to be sent when the mute is called.</summary>
         public string Text { get; }
         /// <summary>Time of the mute in minutes.</summary>
         public int Time { get; }
-        /// <summary>Channel the mute was originally set in.</summary>
-        public ulong Channel { get; }
-        /// <summary>A list of users to notify.</summary>
-        public string[] UsersToNotify { get; }
+        /// <summary>User guild (server)</summary>
+        public ulong Guild { get; }
+
 
         /// <param name="originalMessageId">The original message id used as a unique identifier.</param>
-        /// <param name="user">User who scheduled the mute.</param>
+        /// <param name="user">Muted User.</param>
         /// <param name="text">Text to be sent when the mute is called.</param>
         /// <param name="time">Time of the mute in minutes.</param>
-        /// <param name="channel">Channel the mute was originally set in.</param>
-        /// <param name="usersToNotify">A list of users to notify.</param>
+        /// <param name="guild">User guild (server)</param>
+
         public Mute(string originalMessageId,
                         ulong user,
                         string text,
                         int time,
-                        ulong channel,
-                        string[] usersToNotify = null)
+                        ulong guild)
         {
             OriginalMessageId = originalMessageId;
             User = user;
             Text = text;
             Time = time;
-            Channel = channel;
-
-            // Check if it's null.
-            if(usersToNotify is null)
-            {   // It's null so set it to an empty string[].
-                UsersToNotify = new string[0];
-            }
-            else
-            {   // Not null so we can set the value.
-                UsersToNotify = usersToNotify;
-            }
+            Guild = guild;
         }
 
         public override bool Equals(object obj)

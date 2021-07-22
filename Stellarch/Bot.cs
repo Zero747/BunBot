@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Timers;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
+using BigSister.Mutes;
 using BigSister.Reminders;
 using BigSister.Commands;
 using DSharpPlus.Entities;
@@ -19,11 +20,18 @@ namespace BigSister
     public static class Bot
     {
         static Timer reminderTimer;
+        static Timer muteTimer;
 
         public static async Task RunAsync(DiscordClient botClient)
         {
             // Configure timer. Set it up BEFORE registering events.
             reminderTimer = new Timer
+            {
+                Interval = 60000, // 1 minute
+                AutoReset = true
+            };
+
+            muteTimer = new Timer
             {
                 Interval = 60000, // 1 minute
                 AutoReset = true
@@ -62,6 +70,10 @@ namespace BigSister
             // Snooper
             botClient.MessageCreated += MentionSnooper.MentionSnooper.BotClientMessageCreated;
             botClient.MessageUpdated += MentionSnooper.MentionSnooper.BotClientMessageUpdated;
+
+            // ----------------
+            // Mute timer
+            muteTimer.Elapsed += MuteSystem.MuteTimer_Elapsed;
 
             // ----------------
             // Reminder timer

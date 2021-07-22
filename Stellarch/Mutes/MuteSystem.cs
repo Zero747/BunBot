@@ -27,21 +27,21 @@ namespace BigSister.Mutes
     public static partial class MuteSystem
     {
         /// <summary>Query to add a mute to the database.</summary>
-        const string QQ_AddMute = @"INSERT INTO `Mutes` (`Id`, `UserId`, `ChannelId`, `Message`, `TriggerTime`, `Mentions`) 
-                                         VALUES ($id, $userid, $channelid, $message, $time, $mention);";
+        const string QQ_AddMute = @"INSERT INTO `Mutes` (`Id`, `UserId`, `Message`, `TriggerTime`, `Guild`) 
+                                         VALUES ($id, $userid, $message, $time, $guild);";
         /// <summary>Query to remove a mute from the database.</summary>
         const string QQ_RemoveMute = @"DELETE FROM `Mutes` WHERE `Id`=$id;";
         /// <summary>Query to check if a mute exists.</summary>
         const string QQ_MuteExists = @"SELECT EXISTS(SELECT 1 FROM `Mutes` WHERE `Id`=$id);";
         /// <summary>Query to read the entire mute table.</summary>
-        const string QQ_ReadTable = @"SELECT `Id`, `UserId`, `ChannelId`, `Message`, `TriggerTime`, `Mentions` FROM `Mutes`;";
+        const string QQ_ReadTable = @"SELECT `Id`, `UserId`, `Message`, `TriggerTime`, `Guild` FROM `Mutes`;";
         /// <summary>Query to return all mutes that need to be triggered.</summary>
-        const string QQ_CheckMutesElapsed = @"SELECT `Id`, `UserId`, `ChannelId`, `Message`, `TriggerTime`, `Mentions` 
+        const string QQ_CheckMutesElapsed = @"SELECT `Id`, `UserId`, `Message`, `TriggerTime`, `Guild` 
                                                   FROM `Mutes` WHERE `TriggerTime` <= $timenow;";
         /// <summary>Query to delete all mute that need to be triggered.</summary>
         const string QQ_DeleteMutesElapsed = @"DELETE FROM `Mutes` WHERE `TriggerTime` <= $timenow;";
         /// <summary>Query to get a single mute from a list.</summary>
-        const string QQ_GetMuteFromId = @"SELECT `Id`, `UserId`, `ChannelId`, `Message`, `TriggerTime`, `Mentions` FROM `Mutes` WHERE `Id`=$id;";
+        const string QQ_GetMuteFromId = @"SELECT `Id`, `UserId`, `Message`, `TriggerTime`, `Guild` FROM `Mutes` WHERE `Id`=$id;";
 
         #region MuteCommands.cs
 
@@ -55,7 +55,7 @@ namespace BigSister.Mutes
             MatchCollection regexMatches = DateRegex.Matches(args);
             BitArray regexCoverage = new BitArray(args.Length);
             var dto = ctx.Message.CreationTimestamp;
-            List<ulong> mentions = new List<ulong>();
+            ulong mention;
 
             // String processing - find the message and get the mute end date. 
             // To find what's not a date, we simply look for the first character that isn't in the boundaries of a Regex match. 
@@ -136,16 +136,9 @@ namespace BigSister.Mutes
                 }
             }
 
-            // Get mentions
-            foreach (DiscordUser user in ctx.Message.MentionedUsers)
-            {
-                ulong id = user.Id;
-
-                if (!user.IsBot && !mentions.Contains(id))
-                {
-                    mentions.Add(id);
-                }
-            }
+            // Get mention
+            mention = ctx.Message.MentionedUsers[0].Id;
+            
 
             // At this point, now we have the DateTimeOffset describing when this mute needs to be set off, and we have a message string if
             // any. So now we just need to make sure it's within reasonable boundaries, set the mute, and notify the user.
@@ -202,19 +195,20 @@ namespace BigSister.Mutes
                     originalMessageId: ctx.Message.Id.ToString(),
                     text: messageString.Length.Equals(0) ? @"n/a" : messageString.ToString(),
                     time: (int)(dto.ToUnixTimeSeconds() / 60),
-                    user: ctx.Member.Id,
-                    channel: ctx.Channel.Id,
-                    usersToNotify: mentions.Select(a => Generics.GetMention(a)).ToArray());
+                    user: ctx.Message.MentionedUsers[0].Id,
+                    guild: ctx.Guild.Id
+                    );
 
-                embed.AddField(@"User", ctx.Member.Mention, true);
+                embed.AddField(@"User", ctx.Message.MentionedUsers[0].Mention, true);
                 embed.AddField(@"Time (UTC)", dto.ToString(Generics.DateFormat), true);
                 embed.AddField(@"Remaining time", Generics.GetRemainingTime(dto), true);
                 embed.AddField(@"Notification Identifier", mute.OriginalMessageId.ToString(), false);
 
-                if (GetUsersToNotify(mute.UsersToNotify, out string mentionsString))
-                {
-                    embed.AddField(@"Users to mention", mentionsString, false); //TODO add muted role to listed users
-                }
+
+                // add muted role to listed user
+                DiscordMember member = await ctx.Guild.GetMemberAsync(mute.User);
+                DiscordRole role = ctx.Guild.GetRole(Program.Settings.MuteRoleID);
+                await member.GrantRoleAsync(role);
 
                 // Let's build the command.
                 using var command = new SqliteCommand(BotDatabase.Instance.DataSource)
@@ -232,33 +226,27 @@ namespace BigSister.Mutes
                     DbType = DbType.String
                 };
 
-                SqliteParameter c = new SqliteParameter("$channelid", mute.Channel)
+                SqliteParameter c = new SqliteParameter("$message", mute.Text)
                 {
                     DbType = DbType.String
                 };
 
-                SqliteParameter d = new SqliteParameter("$message", mute.Text)
-                {
-                    DbType = DbType.String
-                };
-
-                SqliteParameter e = new SqliteParameter("$time", mute.Time)
+                SqliteParameter d = new SqliteParameter("$time", mute.Time)
                 {
                     DbType = DbType.Int32
                 };
-
-                var stringBuilder = new StringBuilder();
-                stringBuilder.AppendJoin(' ', mute.UsersToNotify);
-
-                SqliteParameter f = new SqliteParameter("$mention", stringBuilder.ToString())
+                SqliteParameter e = new SqliteParameter("$userid", mute.Guild)
                 {
                     DbType = DbType.String
                 };
 
-                command.Parameters.AddRange(new SqliteParameter[] { a, b, c, d, e, f });
+
+                command.Parameters.AddRange(new SqliteParameter[] { a, b, c, d, e});
 
                 await BotDatabase.Instance.ExecuteNonQuery(command);
                 // Send the response.
+
+                //TODO redirect to action channel (and format as message maybe)
                 await ctx.Channel.SendMessageAsync(embed: embed);
             }
 
@@ -309,10 +297,6 @@ namespace BigSister.Mutes
             discordEmbedBuilder.AddField(@"User", originalAuthorMention, true);
             discordEmbedBuilder.AddField(@"Time (UTC)", dto.ToString(Generics.DateFormat), true);
             discordEmbedBuilder.AddField(@"Notification Identifier", mute.OriginalMessageId.ToString(), false);
-            if (GetUsersToNotify(mute.UsersToNotify, out string mentionsString))
-            {
-                discordEmbedBuilder.AddField(@"Users to mention", mentionsString, false);
-            }
             discordEmbedBuilder.AddField(@"Remaining time", Generics.GetRemainingTime(dto), false);
             discordEmbedBuilder.AddField(@"Message", mute.Text, false);
 
@@ -434,10 +418,6 @@ namespace BigSister.Mutes
                     var valueStringBuilder = new StringBuilder();
 
                     valueStringBuilder.Append($"{Generics.GetMention(mute.User)}: {mute.Text}\n");
-                    if (GetUsersToNotify(mute.UsersToNotify, out string mentionsString))
-                    {
-                        valueStringBuilder.Append($"**Users to mention:** {mentionsString}\n");
-                    }
                     valueStringBuilder.Append($"**Id:** {mute.OriginalMessageId}\n");
                     valueStringBuilder.Append($"**Remaining time:** {Generics.GetRemainingTime(dto)}");
 
@@ -517,10 +497,9 @@ namespace BigSister.Mutes
                         var r = new Mute(
                             originalMessageId: reader.GetString(0),
                             user: ulong.Parse(reader.GetString(1)),
-                            channel: ulong.Parse(reader.GetString(2)),
-                            text: reader.GetString(3),
-                            time: reader.GetInt32(4),
-                            usersToNotify: reader.GetString(5).Split(' ')
+                            text: reader.GetString(2),
+                            time: reader.GetInt32(3),
+                            guild: ulong.Parse(reader.GetString(4))
                         );
 
                         muteList.Add(r);
@@ -588,8 +567,8 @@ namespace BigSister.Mutes
 
                     DiscordEmbedBuilder deb = new DiscordEmbedBuilder()
                     {
-                        Title = "Notification",
-                        Description = mute.Text
+                        Title = "User Unmuted",
+                        Description = Generics.GetMention(mute.User)
                     };
 
                     deb.WithThumbnail(Generics.URL_MUTE_EXCLAIM);
@@ -600,15 +579,14 @@ namespace BigSister.Mutes
                             /*2*/ lateBy.Minutes,
                             /*3*/ lateBy.Seconds));
 
-                    // Get all the people we need to remind.
-                    stringBuilder.Append(Generics.GetMention(mute.User));
-
-                    Array.ForEach(mute.UsersToNotify,            // For every user (a), append them to sb in mention format <@id>.
-                        a => stringBuilder.Append($"{a} "));
 
                     //TODO remove muted role from users
+                    DiscordGuild guild = await Program.BotClient.GetGuildAsync(mute.Guild);
+                    DiscordMember member = await guild.GetMemberAsync(mute.User);
+                    DiscordRole role = guild.GetRole(Program.Settings.MuteRoleID);
 
-                    tasks[i + 1] = (await Program.BotClient.GetChannelAsync(mute.Channel))
+
+                    tasks[i + 1] = (await Program.BotClient.GetChannelAsync(Program.Settings.ActionChannelId))
                                     .SendMessageAsync(
                                         content: stringBuilder.ToString(),
                                         embed: deb.Build());
