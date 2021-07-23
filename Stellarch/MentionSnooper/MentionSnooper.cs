@@ -21,7 +21,7 @@ namespace BigSister.MentionSnooper
         internal static async Task BotClientMessageCreated(DiscordClient botClient, MessageCreateEventArgs e)
         {
             if (Program.Settings.AutoWarnSnoopEnabled &&
-                !e.Author.IsCurrent &&
+                //!e.Author.IsCurrent &&
                 e.Channel.Id == Program.Settings.ActionChannelId)
             {   // Only continue if this is the action channel and wasn't sent by the bot.
 

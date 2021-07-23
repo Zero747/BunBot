@@ -247,7 +247,8 @@ namespace BigSister.Mutes
 
                 //TODO redirect to action channel (and format as message maybe)
                 DiscordChannel sendChannel = await Program.BotClient.GetChannelAsync(Program.Settings.ActionChannelId);
-                await sendChannel.SendMessageAsync(embed: embed);
+                //await sendChannel.SendMessageAsync(embed: embed);
+                await sendChannel.SendMessageAsync(content: $"Muted User: {Generics.GetMention(mute.User)}\nStaff: {Generics.GetMention(ctx.User.Id)}\nRemaining time: {Generics.GetRemainingTime(dto)}\nReason: {mute.Text}");
             }
 
             if (sendErrorEmbed)
