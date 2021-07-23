@@ -160,6 +160,49 @@ namespace BigSister.Commands
         }
 
         #endregion Filter
+
+        #region Mutes
+
+        [Command("mute-limit"), MinimumRole(Role.BotManager)]
+        public async Task SetMuteTimeLimit(CommandContext ctx, uint days)
+        {
+            if (await Permissions.HandlePermissionsCheck(ctx))
+            {
+                // Clamp it to the max value first so the bot doesn't crash.
+                int daysInt = (int)Math.Min(days, int.MaxValue);
+
+                Program.UpdateSettings(ref Program.Settings.MaxMuteTimeDays, daysInt);
+
+                await GenericResponses.SendMessageSettingChanged(
+                    channel: ctx.Channel,
+                    mention: ctx.Member.Mention,
+                    title: @"Max mute duration changed",
+                    valueName: @"max mute duration",
+                    newVal: daysInt.ToString());
+            }
+        }
+
+        //sets the muted role for the server it's called in
+        [Command("muted-role"), MinimumRole(Role.BotManager)]
+        public async Task SetMuteRole(CommandContext ctx, DiscordRole role)
+        {
+            if (await Permissions.HandlePermissionsCheck(ctx))
+            {
+
+                Program.Settings.MuteRoleID[ctx.Guild.Id] = role.Id;
+                Program.SaveSettings();
+
+                await GenericResponses.SendMessageSettingChanged(
+                    channel: ctx.Channel,
+                    mention: ctx.Member.Mention,
+                    title: @"Mute role updated",
+                    valueName: @"Mute role ID",
+                    newVal: role.Mention);
+            }
+        }
+
+        #endregion Mutes
+
         #region Reminders
 
         [Command("reminder-limit"), MinimumRole(Role.BotManager)]

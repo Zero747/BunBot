@@ -18,13 +18,13 @@ namespace BigSister.Commands
     class MuteCommands : BaseCommandModule
     {
         [Command("mute"), MinimumRole(Role.CS)]
-        public async Task MuteUser(CommandContext ctx)
+        public async Task MuteUser(CommandContext ctx, string arg = "")
         {
             await GenericResponses.SendGenericCommandError(
                             ctx.Channel,
                             ctx.Member.Mention,
-                            "Syntax error",
-                            "The syntax is: mute <mention> <time> <reason>.");
+                            @"Unable to add mute",
+                            @"I was unable able to add the mute you gave me. The syntax is mute <mention> <time> <reason>.");
         }
 
 
@@ -76,6 +76,20 @@ namespace BigSister.Commands
                 }
             }
         }
+
+        //removes mute via mention
+        [Command("unmute"), MinimumRole(Role.CS)]
+        public async Task MuteRemove(CommandContext ctx, DiscordMember user)
+        {
+            // Check if they have the permissions to call this command.
+            if (await Permissions.HandlePermissionsCheck(ctx))
+            {
+
+                await MuteSystem.RemoveUserMute(ctx, user);
+
+            }
+        }
+
 
     }
 }

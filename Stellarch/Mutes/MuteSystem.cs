@@ -43,7 +43,10 @@ namespace BigSister.Mutes
         /// <summary>Query to get a single mute from a list.</summary>
         const string QQ_GetMuteFromId = @"SELECT `Id`, `UserId`, `Message`, `TriggerTime`, `Guild` FROM `Mutes` WHERE `Id`=$id;";
         /// <summary>Query to check if any mutes exist for a given user.</summary>
-        const string QQ_UserMuteExists = @"SELECT EXISTS(SELECT 1 FROM `Mutes` WHERE `UserId`=$userid and `Guild` =$guild);"; //TODO - use me for anti mute evade via GuildMemberAdded event
+        const string QQ_UserMuteExists = @"SELECT EXISTS(SELECT 1 FROM `Mutes` WHERE `UserId`=$userid and `Guild` =$guild);";
+        /// <summary>Query to remove mutes for a given user</summary>
+        const string QQ_UserRemoveMute = @"DELETE FROM `Mutes` WHERE `UserId`=$userid and `Guild` =$guild;";
+        /// <summary>Query to check if a mute exists.</summary>
 
         //TODO - remove by uID for a manual unmute command
 
@@ -146,7 +149,7 @@ namespace BigSister.Mutes
             // At this point, now we have the DateTimeOffset describing when this mute needs to be set off, and we have a message string if
             // any. So now we just need to make sure it's within reasonable boundaries, set the mute, and notify the user.
 
-            DateTimeOffset maxtime = new DateTimeOffset(ctx.Message.CreationTimestamp.UtcDateTime).AddMonths(Program.Settings.MaxMuteTimeMonths);
+            DateTimeOffset maxtime = new DateTimeOffset(ctx.Message.CreationTimestamp.UtcDateTime).AddDays(Program.Settings.MaxMuteTimeDays);
             DiscordEmbedBuilder embed;
 
             bool sendErrorEmbed = false;
@@ -168,13 +171,13 @@ namespace BigSister.Mutes
             else if (dto.UtcTicks > maxtime.UtcTicks)
             {   // More than our allowed time away.
 
-                int maxMonths = Program.Settings.MaxMuteTimeMonths;
+                int maxDays = Program.Settings.MaxMuteTimeDays;
 
                 embed = Generics.GenericEmbedTemplate(
                         color: Generics.NegativeColor,
                         description: Generics.NegativeDirectResponseTemplate(
                             mention: ctx.Member.Mention,
-                            body: $"I was unable able to add the mute you gave me. That's more than {maxMonths} month{(maxMonths > 0 ? @"s" : String.Empty)} away..."),
+                            body: $"I was unable able to add the mute you gave me. That's more than {maxDays} day{(maxDays > 0 ? @"s" : String.Empty)} away..."),
                         title: @"Unable to add mute",
                         thumbnail: Generics.URL_MUTE_GENERIC
                     );
@@ -256,7 +259,7 @@ namespace BigSister.Mutes
                 //redirect to action channel
                 DiscordChannel sendChannel = await Program.BotClient.GetChannelAsync(Program.Settings.ActionChannelId);
                 //make a message to report the action
-                await sendChannel.SendMessageAsync(content: $"Muted User: {Generics.GetMention(mute.User)}\nStaff: {Generics.GetMention(ctx.User.Id)}\nRemaining time: {Generics.GetRemainingTime(dto)}\nReason: {mute.Text}");
+                await sendChannel.SendMessageAsync(content: $"**Muted User**: {Generics.GetMention(mute.User)}\nStaff: {Generics.GetMention(ctx.User.Id)}\nRemaining time: {Generics.GetRemainingTime(dto)}\nReason: {mute.Text}");
 
                 //await sendChannel.SendMessageAsync(embed: embed); //formerly sending as an embed
             }
@@ -311,6 +314,55 @@ namespace BigSister.Mutes
             discordEmbedBuilder.AddField(@"Mute Identifier", mute.OriginalMessageId.ToString(), false);
             discordEmbedBuilder.AddField(@"Remaining time", Generics.GetRemainingTime(dto), false);
             discordEmbedBuilder.AddField(@"Message", mute.Text, false);
+
+            // Send the response.
+            await ctx.Channel.SendMessageAsync(embed: discordEmbedBuilder);
+        }
+
+        public static async Task RemoveUserMute(CommandContext ctx, DiscordMember user)
+        {
+           
+
+            // Let's build the command.
+            using var command = new SqliteCommand(BotDatabase.Instance.DataSource)
+            {
+                CommandText = QQ_UserRemoveMute
+            };
+
+            SqliteParameter a = new SqliteParameter("$userid", user.Id)
+            {
+                DbType = DbType.String
+            };
+            SqliteParameter b = new SqliteParameter("$guild", ctx.Guild.Id)
+            {
+                DbType = DbType.String
+            };
+
+            command.Parameters.AddRange(new SqliteParameter[] { a, b });
+
+
+
+            // and run it
+            await BotDatabase.Instance.ExecuteNonQuery(command);
+
+            if (ctx.Guild.Members.ContainsKey(user.Id))
+            {
+                DiscordRole role = ctx.Guild.GetRole(Program.Settings.MuteRoleID[ctx.Guild.Id]);
+                await user.RevokeRoleAsync(role);
+            }
+
+
+            // Now let's respond.
+
+            var discordEmbedBuilder = new DiscordEmbedBuilder(Generics.GenericEmbedTemplate(
+                color: Generics.PositiveColor,
+                description: Generics.PositiveDirectResponseTemplate(
+                    mention: ctx.Member.Mention,
+                    @"I removed any mutes on this user!"),
+                thumbnail: Generics.URL_MUTE_DELETED,
+                title: @"Removed mute"));
+
+            discordEmbedBuilder.AddField(@"User", user.Mention, true);
 
             // Send the response.
             await ctx.Channel.SendMessageAsync(embed: discordEmbedBuilder);
