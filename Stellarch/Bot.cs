@@ -41,6 +41,7 @@ namespace BigSister
             RegisterEvents(botClient);
 
             reminderTimer.Start();
+            muteTimer.Start();
 
             await botClient.ConnectAsync();
             await Task.Delay(-1);
@@ -51,6 +52,7 @@ namespace BigSister
             var commands = botClient.GetCommandsNext();
 
             commands.RegisterCommands<FilterCommands>();
+            commands.RegisterCommands<MuteCommands>();
             commands.RegisterCommands<ReminderCommands>();
             commands.RegisterCommands<RoleRequestCommands>();
             commands.RegisterCommands<ModerationCommands>();

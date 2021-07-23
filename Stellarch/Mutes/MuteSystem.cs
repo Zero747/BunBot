@@ -50,12 +50,11 @@ namespace BigSister.Mutes
         static readonly Regex DateRegex
             = new Regex(@"(\d+)\s?(months?|days?|d|weeks?|wks?|w|hours?|hrs?|h|minutes?|mins?|m)",
                 RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.Singleline);
-        public static async Task AddMute(CommandContext ctx, string args)
+        public static async Task AddMute(CommandContext ctx, DiscordMember targetUser, string args)
         {   // Firstly get all the matches.
             MatchCollection regexMatches = DateRegex.Matches(args);
             BitArray regexCoverage = new BitArray(args.Length);
             var dto = ctx.Message.CreationTimestamp;
-            ulong mention;
 
             // String processing - find the message and get the mute end date. 
             // To find what's not a date, we simply look for the first character that isn't in the boundaries of a Regex match. 
@@ -137,7 +136,7 @@ namespace BigSister.Mutes
             }
 
             // Get mention
-            mention = ctx.Message.MentionedUsers[0].Id;
+            //mention = targetUser.Id;
             
 
             // At this point, now we have the DateTimeOffset describing when this mute needs to be set off, and we have a message string if
@@ -187,7 +186,7 @@ namespace BigSister.Mutes
                         description: Generics.PositiveDirectResponseTemplate(
                             mention: ctx.Member.Mention,
                             body: @"I added the mute you gave me!"),
-                        title: @"Add mute",
+                        title: @"User muted",
                         thumbnail: Generics.URL_MUTE_GENERIC
                     );
 
@@ -195,7 +194,7 @@ namespace BigSister.Mutes
                     originalMessageId: ctx.Message.Id.ToString(),
                     text: messageString.Length.Equals(0) ? @"n/a" : messageString.ToString(),
                     time: (int)(dto.ToUnixTimeSeconds() / 60),
-                    user: ctx.Message.MentionedUsers[0].Id,
+                    user: targetUser.Id,
                     guild: ctx.Guild.Id
                     );
 
@@ -235,7 +234,7 @@ namespace BigSister.Mutes
                 {
                     DbType = DbType.Int32
                 };
-                SqliteParameter e = new SqliteParameter("$userid", mute.Guild)
+                SqliteParameter e = new SqliteParameter("guild", mute.Guild)
                 {
                     DbType = DbType.String
                 };
@@ -247,7 +246,8 @@ namespace BigSister.Mutes
                 // Send the response.
 
                 //TODO redirect to action channel (and format as message maybe)
-                await ctx.Channel.SendMessageAsync(embed: embed);
+                DiscordChannel sendChannel = await Program.BotClient.GetChannelAsync(Program.Settings.ActionChannelId);
+                await sendChannel.SendMessageAsync(embed: embed);
             }
 
             if (sendErrorEmbed)
@@ -296,7 +296,7 @@ namespace BigSister.Mutes
 
             discordEmbedBuilder.AddField(@"User", originalAuthorMention, true);
             discordEmbedBuilder.AddField(@"Time (UTC)", dto.ToString(Generics.DateFormat), true);
-            discordEmbedBuilder.AddField(@"Notification Identifier", mute.OriginalMessageId.ToString(), false);
+            discordEmbedBuilder.AddField(@"Mute Identifier", mute.OriginalMessageId.ToString(), false);
             discordEmbedBuilder.AddField(@"Remaining time", Generics.GetRemainingTime(dto), false);
             discordEmbedBuilder.AddField(@"Message", mute.Text, false);
 
@@ -584,6 +584,7 @@ namespace BigSister.Mutes
                     DiscordGuild guild = await Program.BotClient.GetGuildAsync(mute.Guild);
                     DiscordMember member = await guild.GetMemberAsync(mute.User);
                     DiscordRole role = guild.GetRole(Program.Settings.MuteRoleID[mute.Guild]);
+                    await member.RevokeRoleAsync(role);
 
 
                     tasks[i + 1] = (await Program.BotClient.GetChannelAsync(Program.Settings.ActionChannelId))

@@ -24,6 +24,8 @@
 //  |   Snowflake of message            |   Snowflake of role                   |   If the EmoteData is a unicode value |   character or a ulong id.            |
 //  =============================================================================================================================================================
 //
+// There's a 5th table for mutes but I don't want to go mad with formatting, it's basically reminders but guild id instead of channel ID and no mentions
+
                           
 
 using System;
