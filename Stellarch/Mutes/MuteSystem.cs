@@ -181,11 +181,13 @@ namespace BigSister.Mutes
             {   // Everything is good in the world... except that the world is burning, but that's not something we're worried about here, for
                 // now...
 
+
+                //this is really just here so the error embed bit doesn't yell at me
                 embed = Generics.GenericEmbedTemplate(
                         color: Generics.PositiveColor,
                         description: Generics.PositiveDirectResponseTemplate(
                             mention: ctx.Member.Mention,
-                            body: @"I added the mute you gave me!"),
+                            body: @"I added the mute you gave me! You shouldn't see this!"),
                         title: @"User muted",
                         thumbnail: Generics.URL_MUTE_GENERIC
                     );
@@ -198,11 +200,13 @@ namespace BigSister.Mutes
                     guild: ctx.Guild.Id
                     );
 
+                //don't need these either
+                /*
                 embed.AddField(@"User", ctx.Message.MentionedUsers[0].Mention, true);
                 embed.AddField(@"Time (UTC)", dto.ToString(Generics.DateFormat), true);
                 embed.AddField(@"Remaining time", Generics.GetRemainingTime(dto), true);
                 embed.AddField(@"Notification Identifier", mute.OriginalMessageId.ToString(), false);
-
+                */
 
                 // add muted role to listed user
                 DiscordMember member = await ctx.Guild.GetMemberAsync(mute.User);
@@ -245,10 +249,12 @@ namespace BigSister.Mutes
                 await BotDatabase.Instance.ExecuteNonQuery(command);
                 // Send the response.
 
-                //TODO redirect to action channel (and format as message maybe)
+                //redirect to action channel
                 DiscordChannel sendChannel = await Program.BotClient.GetChannelAsync(Program.Settings.ActionChannelId);
-                //await sendChannel.SendMessageAsync(embed: embed);
+                //make a message to report the action
                 await sendChannel.SendMessageAsync(content: $"Muted User: {Generics.GetMention(mute.User)}\nStaff: {Generics.GetMention(ctx.User.Id)}\nRemaining time: {Generics.GetRemainingTime(dto)}\nReason: {mute.Text}");
+
+                //await sendChannel.SendMessageAsync(embed: embed); //formerly sending as an embed
             }
 
             if (sendErrorEmbed)
