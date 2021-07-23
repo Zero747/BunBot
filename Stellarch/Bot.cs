@@ -74,7 +74,8 @@ namespace BigSister
             botClient.MessageUpdated += MentionSnooper.MentionSnooper.BotClientMessageUpdated;
 
             // ----------------
-            // Mute timer
+            // Mute 
+            botClient.GuildMemberAdded += MuteSystem.CheckMuteEvade;
             muteTimer.Elapsed += MuteSystem.MuteTimer_Elapsed;
 
             // ----------------

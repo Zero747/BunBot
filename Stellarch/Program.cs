@@ -173,8 +173,8 @@ namespace BigSister
             {
                 Token = Identity.Authkey,
                 TokenType = TokenType.Bot,
-                AutoReconnect = true
-                //Intents = DiscordIntents.All
+                AutoReconnect = true,
+                Intents = DiscordIntents.All
             };
 
             BotClient = new DiscordClient(botConfig);

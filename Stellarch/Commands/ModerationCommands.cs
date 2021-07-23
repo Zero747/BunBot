@@ -109,6 +109,17 @@ namespace BigSister.Commands
             } // end if
         } // end method
 
+        [Command("userinfo"),
+         MinimumRole(Role.CS)]
+        public async Task GetUserInfo(CommandContext ctx)
+        {
+            await ctx.Channel.SendMessageAsync(
+                       embed: Generics.GenericEmbedTemplate(
+                           color: Generics.NegativeColor,
+                           description: @"Usage: userinfo <mention>",
+                           title: @"Incorrect Syntax"));
+        }
+
         /// <summary>Retrieves the user's Discord join date by their snowflake.</summary>
         /// <param name="id">Snowflake</param>
         private static DateTimeOffset GetJoinedDiscordTime(ulong id)

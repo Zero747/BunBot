@@ -42,6 +42,10 @@ namespace BigSister.Mutes
         const string QQ_DeleteMutesElapsed = @"DELETE FROM `Mutes` WHERE `TriggerTime` <= $timenow;";
         /// <summary>Query to get a single mute from a list.</summary>
         const string QQ_GetMuteFromId = @"SELECT `Id`, `UserId`, `Message`, `TriggerTime`, `Guild` FROM `Mutes` WHERE `Id`=$id;";
+        /// <summary>Query to check if any mutes exist for a given user.</summary>
+        const string QQ_UserMuteExists = @"SELECT EXISTS(SELECT 1 FROM `Mutes` WHERE `UserId`=$userid and `Guild` =$guild);"; //TODO - use me for anti mute evade via GuildMemberAdded event
+
+        //TODO - remove by uID for a manual unmute command
 
         #region MuteCommands.cs
 
@@ -154,7 +158,7 @@ namespace BigSister.Mutes
                         color: Generics.NegativeColor,
                         description: Generics.NegativeDirectResponseTemplate(
                             mention: ctx.Member.Mention,
-                            body: @"I was unable able to add the mute you gave me. You didn't supply me a valid time..."),
+                            body: @"I was unable able to add the mute you gave me. You didn't supply me a valid time. The syntax is mute <mention> <time> <reason>."),
                         title: @"Unable to add mute",
                         thumbnail: Generics.URL_MUTE_GENERIC
                     );
@@ -259,10 +263,11 @@ namespace BigSister.Mutes
 
             if (sendErrorEmbed)
             {
-                var a = ctx.Channel.SendMessageAsync(embed: embed);
-                var b = GenericResponses.HandleInvalidArguments(ctx);
+                //send the error if one occured
+                await ctx.Channel.SendMessageAsync(embed: embed);
+                //var b = GenericResponses.HandleInvalidArguments(ctx);
 
-                await Task.WhenAll(a, b);
+                //await Task.WhenAll(a, b);
             }
         }
 
@@ -328,6 +333,63 @@ namespace BigSister.Mutes
             };
 
             command.Parameters.Add(a);
+
+            object returnVal = await BotDatabase.Instance.ExecuteReaderAsync(command,
+                    processAction: delegate (SqliteDataReader reader)
+                    {
+                        object a;
+
+                        if (reader.Read())
+                        {   // Let's read the database.
+                            a = reader.GetValue(0);
+                        }
+                        else
+                        {
+                            a = null;
+                        }
+
+                        return a;
+                    });
+
+            int returnValC;
+
+            // Try to convert it to an int. If it throws an exception for some reason, chances are it's not what we're looking for.
+            try
+            {
+                returnValC = Convert.ToInt32(returnVal);
+            }
+            catch
+            {   // Probably not an int, so let's set the value to something we absolutely know will return as false.
+                returnValC = -1;
+            }
+
+            // Let's get the return value by checking if the returnval == 1
+            hasItem_returnVal = returnValC == 1;
+
+            return hasItem_returnVal;
+        }
+
+        /// <summary>Check if a provided ID is a mute.</summary>
+        public static async Task<bool> IsMutedUser(ulong id, ulong gid)
+        {
+            bool hasItem_returnVal;
+
+            // Let's build the command.
+            using var command = new SqliteCommand(BotDatabase.Instance.DataSource)
+            {
+                CommandText = QQ_UserMuteExists
+            };
+
+            SqliteParameter a = new SqliteParameter("$userid", id)
+            {
+                DbType = DbType.String
+            };
+            SqliteParameter b = new SqliteParameter("$guild", gid)
+            {
+                DbType = DbType.String
+            };
+
+            command.Parameters.AddRange(new SqliteParameter[] { a, b});
 
             object returnVal = await BotDatabase.Instance.ExecuteReaderAsync(command,
                     processAction: delegate (SqliteDataReader reader)
@@ -530,6 +592,16 @@ namespace BigSister.Mutes
             return returnVal;
         }
 
+        public static async Task CheckMuteEvade(DSharpPlus.DiscordClient c, DSharpPlus.EventArgs.GuildMemberAddEventArgs ctx)
+        {
+            if(await IsMutedUser(ctx.Member.Id, ctx.Guild.Id))
+            {
+                DiscordMember member = await ctx.Guild.GetMemberAsync(ctx.Member.Id);
+                DiscordRole role = ctx.Guild.GetRole(Program.Settings.MuteRoleID[ctx.Guild.Id]); 
+                await member.GrantRoleAsync(role);
+            }
+        }
+
         /// <summary>Find any mutes that need to be triggered and trigger them.</summary>
         static async Task LookTriggerMutes(int timeNowMinutes)
         {
@@ -587,12 +659,20 @@ namespace BigSister.Mutes
                             /*3*/ lateBy.Seconds));
 
 
-                    //TODO remove muted role from users
                     DiscordGuild guild = await Program.BotClient.GetGuildAsync(mute.Guild);
-                    DiscordMember member = await guild.GetMemberAsync(mute.User);
-                    DiscordRole role = guild.GetRole(Program.Settings.MuteRoleID[mute.Guild]);
-                    await member.RevokeRoleAsync(role);
+                    if (guild.Members.ContainsKey(mute.User))
+                    {
+                        DiscordMember member = await guild.GetMemberAsync(mute.User);
+                        DiscordRole role = guild.GetRole(Program.Settings.MuteRoleID[mute.Guild]);
+                        await member.RevokeRoleAsync(role);
+                    }
+                    else
+                    {
+                        deb.AddField("Note", value: "User has left the server");
+                    }
 
+
+                        
 
                     tasks[i + 1] = (await Program.BotClient.GetChannelAsync(Program.Settings.ActionChannelId))
                                     .SendMessageAsync(

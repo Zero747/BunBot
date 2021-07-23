@@ -17,6 +17,17 @@ namespace BigSister.Commands
 {
     class MuteCommands : BaseCommandModule
     {
+        [Command("mute"), MinimumRole(Role.CS)]
+        public async Task MuteUser(CommandContext ctx)
+        {
+            await GenericResponses.SendGenericCommandError(
+                            ctx.Channel,
+                            ctx.Member.Mention,
+                            "Syntax error",
+                            "The syntax is: mute <mention> <time> <reason>.");
+        }
+
+
         //Mute mentioned user
         [Command("mute"), MinimumRole(Role.CS)]
         public async Task MuteUser(CommandContext ctx, 
