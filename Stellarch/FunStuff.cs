@@ -117,7 +117,7 @@ namespace BigSister
             new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"☁️"), Message = "Cloudwatching..." },
             new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"🕒"), Message = "Wandering..." },
             new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"💀"), Message = "Disposing of raider bodies"},
-            new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"🥗"),  Message = "Eating some vegetable medley"},
+            new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"🥗"),  Message = "Eating some salad"},
             new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"💓"), Message = "Healing after a raid"},
             new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"🩺"),  Message = "Healing a colonist"},
             new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"🤬"),  Message = "Having a mental break!"},
