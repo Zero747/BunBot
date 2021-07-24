@@ -48,7 +48,6 @@ namespace BigSister.Mutes
         const string QQ_UserRemoveMute = @"DELETE FROM `Mutes` WHERE `UserId`=$userid and `Guild` =$guild;";
         /// <summary>Query to check if a mute exists.</summary>
 
-        //TODO - remove by uID for a manual unmute command
 
         #region MuteCommands.cs
 
@@ -217,7 +216,7 @@ namespace BigSister.Mutes
 
                 // add muted role to listed user
                 DiscordMember member = await ctx.Guild.GetMemberAsync(mute.User);
-                DiscordRole role = ctx.Guild.GetRole(Program.Settings.MuteRoleID[mute.Guild]); //TODO need a better way to get muted role ID
+                DiscordRole role = ctx.Guild.GetRole(Program.Settings.MuteRoleID[mute.Guild]); 
                 await member.GrantRoleAsync(role);
 
                 // Let's build the command.
