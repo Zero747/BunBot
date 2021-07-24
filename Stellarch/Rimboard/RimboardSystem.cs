@@ -136,9 +136,10 @@ namespace BigSister.Rimboard
 
             // Before anything, let's make sure that...
             //  1) This is not the rimboard channel
-            //  2) Rimboard is enabled.
-            //  3) The Rimboard webhook is not default.
-            //  4) This was not sent by the bot (requires nocache).
+            //  2) This isn't an excluded channel
+            //  3) Rimboard is enabled.
+            //  4) The Rimboard webhook is not default.
+            //  5) This was not sent by a bot (requires nocache).
             if (e.Channel.Id != Program.Settings.RimboardChannelId &&
                 !Program.Settings.RimboardExcludedChannels.Contains(e.Channel.Id) &&
                 Program.Settings.RimboardEnabled &&
