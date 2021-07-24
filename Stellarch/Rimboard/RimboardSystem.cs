@@ -140,7 +140,7 @@ namespace BigSister.Rimboard
             //  3) The Rimboard webhook is not default.
             //  4) This was not sent by the bot (requires nocache).
             if (e.Channel.Id != Program.Settings.RimboardChannelId &&
-                !Program.Settings.ExcludedChannels.Contains(e.Channel.Id) &&
+                !Program.Settings.RimboardExcludedChannels.Contains(e.Channel.Id) &&
                 Program.Settings.RimboardEnabled &&
                 Program.Settings.RimboardWebhookId != BotSettings.Default.RimboardWebhookId &&
                 // De-cache the message so we can get its author.
