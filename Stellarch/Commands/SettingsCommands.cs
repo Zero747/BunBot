@@ -385,6 +385,132 @@ namespace BigSister.Commands
             }
         }
 
+
+        [Command("rimboard-excluded-channels"), MinimumRole(Role.BotManager)]
+        public async Task RimboardExcludeChannel(CommandContext ctx, string command)
+        {
+            if (await Permissions.HandlePermissionsCheck(ctx) && command.Equals("list"))
+            {
+                // Check if there are even any excluded channels.
+                if (Program.Settings.RimboardExcludedChannels.Count > 0)
+                {
+                    var stringBuilder = new StringBuilder();
+
+                    stringBuilder.AppendJoin('\n',
+                        Program.Settings.RimboardExcludedChannels.Select(a => Generics.GetChannelMention(a)));
+
+                    await ctx.RespondAsync(
+                        embed: Generics.GenericEmbedTemplate(
+                            color: Generics.NeutralColor,
+                            description: Generics.NeutralDirectResponseTemplate(
+                                mention: ctx.Member.Mention,
+                                body: $"here are the ignored rimboard channels:\n{stringBuilder.ToString()}"),
+                            thumbnail: Generics.URL_SPEECH_BUBBLE,
+                            title: @"Excluded channels"));
+                }
+                else
+                {
+                    await ctx.RespondAsync(
+                        embed: Generics.GenericEmbedTemplate(
+                            color: Generics.NeutralColor,
+                            description: Generics.NeutralDirectResponseTemplate(
+                                mention: ctx.Member.Mention,
+                                body: @"there are no excluded channels."),
+                            thumbnail: Generics.URL_SPEECH_BUBBLE,
+                            title: @"Excluded channels"));
+                }
+            }
+        }
+
+        [Command("excluded-channels"), MinimumRole(Role.BotManager)]
+        public async Task RimboardExcludeChannel(CommandContext ctx, string command, params DiscordChannel[] channels)
+        {
+            if (await Permissions.HandlePermissionsCheck(ctx))
+            {
+                Func<DiscordChannel, bool> commandsAction;
+                string verb;
+                string verb2;
+
+                switch (command)
+                {
+                    case "add":
+                        commandsAction = delegate (DiscordChannel c)
+                        {
+                            ulong id = c.Id;
+                            // Make sure it doesn't exist.
+                            bool notExists_returnVal = !Program.Settings.RimboardExcludedChannels.Contains(id);
+                            // It doesn't exist, so we can add it. 
+                            if (notExists_returnVal)
+                                Program.Settings.RimboardExcludedChannels.Add(id);
+
+                            return notExists_returnVal;
+                        };
+
+                        verb = @"add";
+                        verb2 = @"added";
+                        break;
+                    case "remove":
+                        commandsAction = delegate (DiscordChannel c)
+                        {
+                            ulong id = c.Id;
+                            // Check if it exists.
+                            bool exists_returnVal = Program.Settings.RimboardExcludedChannels.Contains(id);
+                            // Only remove it if it exists.
+                            if (exists_returnVal)
+                                Program.Settings.RimboardExcludedChannels.Remove(id);
+
+                            return exists_returnVal;
+                        };
+
+                        verb = @"remove";
+                        verb2 = @"removed";
+                        break;
+                    default:
+                        commandsAction = null;
+                        verb = String.Empty;
+                        verb2 = String.Empty;
+                        break;
+                }
+
+                // Check if we got a valid command arg.
+                if (commandsAction is null)
+                {   // We did not get a valid command arg.
+                    await GenericResponses.HandleInvalidArguments(ctx);
+                }
+                else
+                {   // We did get a valid command arg.
+                    // Array of everything and a description of if it was added or not.
+                    Dictionary<DiscordChannel, bool> successAdded =
+                        new Dictionary<DiscordChannel, bool>(channels.Length);
+
+                    // Loop through each channel.
+                    foreach (DiscordChannel chan in channels)
+                    {   // Invoke our command on each channel
+                        successAdded.Add(chan, commandsAction.Invoke(chan));
+                    }
+
+                    // Check if anything was added successfully.
+                    if (successAdded.Any(a => a.Value))
+                    {   // Yes, at least one thing was added successfully. So let's save the settings now that they've been updated.
+                        Program.SaveSettings();
+                    }
+
+                    // Respond.
+
+                    await GenericResponses.SendMessageChangedNotChanged(
+                        channel: ctx.Channel,
+                        title: $"Attempted to {verb} channel(s)",
+                        mention: ctx.Member.Mention,
+                        body: $"I attempted to {verb} the channels you gave me.",
+                        successChanged: successAdded,
+                        verb: verb2,
+                        invertedVerb: $"not {verb2}");
+                }
+            }
+        }
+
+
+
         #endregion Rimboard
         #region Fun stuff
 

@@ -69,6 +69,9 @@ namespace BigSister.Settings
         public int RimboardReactionsNeeded = 5;
         /// <summary>Number of reactions needed to pin a message in Rimboard.</summary>
         public int RimboardPinReactionsNeeded = 10;
+        /// Not set to any default channels. Just want to initiate it so it isn't null.
+        public List<ulong> RimboardExcludedChannels = new List<ulong>();
+
 
         // ----------------
         // FunStuff
