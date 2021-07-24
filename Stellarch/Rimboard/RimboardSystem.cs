@@ -122,19 +122,27 @@ namespace BigSister.Rimboard
 
         internal static async Task BotClientMessageReactionAdded(DiscordClient botClient, MessageReactionAddEventArgs e)
         {
+
+            //short circuit, don't do anything if it's not the rimboard emote
+            EmojiData react = new EmojiData(e.Emoji);
+            if (react.Value != Program.Settings.RimboardEmoticon.Value)
+            {
+                return;
+            }
+
             // We don't want the cached version of this message because if it was sent during downtime, the bot won't be able to do
             // anything with it.
             var message_noCache = await e.Channel.GetMessageAsync(e.Message.Id);
 
             // Before anything, let's make sure that...
             //  1) This is not the rimboard channel
-            //  2) Rimboard is enabled.
-            //  3) The Rimboard webhook is not default.
-            //  4) This was not sent by the bot (requires nocache).
+            //  2) This isn't an excluded channel
+            //  3) Rimboard is enabled.
+            //  4) The Rimboard webhook is not default.
+            //  5) This was not sent by a bot (requires nocache).
             if (e.Channel.Id != Program.Settings.RimboardChannelId &&
-                e.Channel.Id != 401672277692776448 &&   // Temporary patch to ignore the announcements channel and
-                e.Channel.Id != 220997547345313793 &&   // mod-updates channel while I work on the next
-                Program.Settings.RimboardEnabled &&     // update. Please, please, PLEASE get a proper Rimboard-channel-ignore method at some point.
+                !Program.Settings.RimboardExcludedChannels.Contains(e.Channel.Id) &&
+                Program.Settings.RimboardEnabled &&
                 Program.Settings.RimboardWebhookId != BotSettings.Default.RimboardWebhookId &&
                 // De-cache the message so we can get its author.
                 !(message_noCache.Author.IsBot))
@@ -150,9 +158,15 @@ namespace BigSister.Rimboard
 
                 int reactCount = pinReactionsList.FirstOrDefault().Count;
 
+                //short circuit, don't involve the DB if not enough reacts
+                if (reactCount < Program.Settings.RimboardReactionsNeeded)
+                {
+                    return;
+                }
+
                 // Let's now try to get the Rimboard message.
 
-                PinInfo pinInfo = await QueryDatabaseForOriginalMessage(e.Message.Id, reactCount);
+                    PinInfo pinInfo = await QueryDatabaseForOriginalMessage(e.Message.Id, reactCount);
                 bool validPinInfo = !pinInfo.Equals(PinInfo.Invalid);
 
                 // Right now we want to check if the message has been posted already and react according to its reaction count.

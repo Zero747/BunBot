@@ -1,7 +1,8 @@
-﻿// ReminderSystem.cs
-// A portion of the reminder system containing everything needed for processing reminders from ReminderCommands.cs
+﻿// MuteSystem.cs
+// A portion of the mute system containing everything needed for processing mutes from MuteCommands.cs
 //  
 
+//TODO general format cleanup
 
 using System;
 using System.Collections;
@@ -21,42 +22,48 @@ using BigSister.Database;
 using System.Runtime.InteropServices.ComTypes;
 using DSharpPlus.Interactivity.Extensions;
 
-namespace BigSister.Reminders
+namespace BigSister.Mutes
 {
-    public static partial class ReminderSystem
+    public static partial class MuteSystem
     {
-        /// <summary>Query to add a reminder to the database.</summary>
-        const string QQ_AddReminder = @"INSERT INTO `Reminders` (`Id`, `UserId`, `ChannelId`, `Message`, `TriggerTime`, `Mentions`) 
-                                         VALUES ($id, $userid, $channelid, $message, $time, $mention);";
-        /// <summary>Query to remove a reminder from the database.</summary>
-        const string QQ_RemoveReminder = @"DELETE FROM `Reminders` WHERE `Id`=$id;";
-        /// <summary>Query to check if a reminder exists.</summary>
-        const string QQ_ReminderExists = @"SELECT EXISTS(SELECT 1 FROM `Reminders` WHERE `Id`=$id);";
-        /// <summary>Query to read the entire reminder table.</summary>
-        const string QQ_ReadTable = @"SELECT `Id`, `UserId`, `ChannelId`, `Message`, `TriggerTime`, `Mentions` FROM `Reminders`;";
-        /// <summary>Query to return all reminders that need to be triggered.</summary>
-        const string QQ_CheckRemindersElapsed = @"SELECT `Id`, `UserId`, `ChannelId`, `Message`, `TriggerTime`, `Mentions` 
-                                                  FROM `Reminders` WHERE `TriggerTime` <= $timenow;";
-        /// <summary>Query to delete all reminders that need to be triggered.</summary>
-        const string QQ_DeleteRemindersElapsed = @"DELETE FROM `Reminders` WHERE `TriggerTime` <= $timenow;";
-        /// <summary>Query to get a single reminder from a list.</summary>
-        const string QQ_GetReminderFromId = @"SELECT `Id`, `UserId`, `ChannelId`, `Message`, `TriggerTime`, `Mentions` FROM `Reminders` WHERE `Id`=$id;";
+        /// <summary>Query to add a mute to the database.</summary>
+        const string QQ_AddMute = @"INSERT INTO `Mutes` (`Id`, `UserId`, `Message`, `TriggerTime`, `Guild`) 
+                                         VALUES ($id, $userid, $message, $time, $guild);";
+        /// <summary>Query to remove a mute from the database.</summary>
+        const string QQ_RemoveMute = @"DELETE FROM `Mutes` WHERE `Id`=$id;";
+        /// <summary>Query to check if a mute exists.</summary>
+        const string QQ_MuteExists = @"SELECT EXISTS(SELECT 1 FROM `Mutes` WHERE `Id`=$id);";
+        /// <summary>Query to read the entire mute table.</summary>
+        const string QQ_ReadTable = @"SELECT `Id`, `UserId`, `Message`, `TriggerTime`, `Guild` FROM `Mutes`;";
+        /// <summary>Query to return all mutes that need to be triggered.</summary>
+        const string QQ_CheckMutesElapsed = @"SELECT `Id`, `UserId`, `Message`, `TriggerTime`, `Guild` 
+                                                  FROM `Mutes` WHERE `TriggerTime` <= $timenow;";
+        /// <summary>Query to delete all mute that need to be triggered.</summary>
+        const string QQ_DeleteMutesElapsed = @"DELETE FROM `Mutes` WHERE `TriggerTime` <= $timenow;";
+        /// <summary>Query to get a single mute from a list.</summary>
+        const string QQ_GetMuteFromId = @"SELECT `Id`, `UserId`, `Message`, `TriggerTime`, `Guild` FROM `Mutes` WHERE `Id`=$id;";
+        /// <summary>Query to check if any mutes exist for a given user.</summary>
+        const string QQ_UserMuteExists = @"SELECT EXISTS(SELECT 1 FROM `Mutes` WHERE `UserId`=$userid and `Guild` =$guild);";
+        /// <summary>Query to remove mutes for a given user</summary>
+        const string QQ_UserRemoveMute = @"DELETE FROM `Mutes` WHERE `UserId`=$userid and `Guild` =$guild;";
+        /// <summary>Query to check if a mute exists.</summary>
 
-        #region ReminderCommands.cs
+        //TODO - remove by uID for a manual unmute command
+
+        #region MuteCommands.cs
 
         /// <summary>The date recognition Regex.</summary>
         // It groups every number/time unit pairing "(number)+(time unit)" into a group. 
         static readonly Regex DateRegex
             = new Regex(@"(\d+)\s?(months?|days?|d|weeks?|wks?|w|hours?|hrs?|h|minutes?|mins?|m)",
                 RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.Singleline);
-        public static async Task AddReminder(CommandContext ctx, string args)
+        public static async Task AddMute(CommandContext ctx, DiscordMember targetUser, string args)
         {   // Firstly get all the matches.
             MatchCollection regexMatches = DateRegex.Matches(args);
             BitArray regexCoverage = new BitArray(args.Length);
             var dto = ctx.Message.CreationTimestamp;
-            List<ulong> mentions = new List<ulong>();
 
-            // String processing - find the message and get the reminder end date. 
+            // String processing - find the message and get the mute end date. 
             // To find what's not a date, we simply look for the first character that isn't in the boundaries of a Regex match. 
             //
             // Structure of a possible string:
@@ -135,21 +142,14 @@ namespace BigSister.Reminders
                 }
             }
 
-            // Get mentions
-            foreach (DiscordUser user in ctx.Message.MentionedUsers)
-            {
-                ulong id = user.Id;
+            // Get mention
+            //mention = targetUser.Id;
+            
 
-                if (!user.IsBot && !mentions.Contains(id))
-                {
-                    mentions.Add(id);
-                }
-            }
+            // At this point, now we have the DateTimeOffset describing when this mute needs to be set off, and we have a message string if
+            // any. So now we just need to make sure it's within reasonable boundaries, set the mute, and notify the user.
 
-            // At this point, now we have the DateTimeOffset describing when this reminder needs to be set off, and we have a message string if
-            // any. So now we just need to make sure it's within reasonable boundaries, set the reminder, and notify the user.
-
-            DateTimeOffset maxtime = new DateTimeOffset(ctx.Message.CreationTimestamp.UtcDateTime).AddMonths(Program.Settings.MaxReminderTimeMonths);
+            DateTimeOffset maxtime = new DateTimeOffset(ctx.Message.CreationTimestamp.UtcDateTime).AddDays(Program.Settings.MaxMuteTimeDays);
             DiscordEmbedBuilder embed;
 
             bool sendErrorEmbed = false;
@@ -161,9 +161,9 @@ namespace BigSister.Reminders
                         color: Generics.NegativeColor,
                         description: Generics.NegativeDirectResponseTemplate(
                             mention: ctx.Member.Mention,
-                            body: @"I was unable able to add the reminder you gave me. You didn't supply me a valid time..."),
-                        title: @"Unable to add reminder",
-                        thumbnail: Generics.URL_REMINDER_GENERIC
+                            body: @"I was unable able to add the mute you gave me. You didn't supply me a valid time. The syntax is mute <mention> <time> <reason>."),
+                        title: @"Unable to add mute",
+                        thumbnail: Generics.URL_MUTE_GENERIC
                     );
 
                 sendErrorEmbed = true;
@@ -171,15 +171,15 @@ namespace BigSister.Reminders
             else if (dto.UtcTicks > maxtime.UtcTicks)
             {   // More than our allowed time away.
 
-                int maxMonths = Program.Settings.MaxReminderTimeMonths;
+                int maxDays = Program.Settings.MaxMuteTimeDays;
 
                 embed = Generics.GenericEmbedTemplate(
                         color: Generics.NegativeColor,
                         description: Generics.NegativeDirectResponseTemplate(
                             mention: ctx.Member.Mention,
-                            body: $"I was unable able to add the reminder you gave me. That's more than {maxMonths} month{(maxMonths > 0 ? @"s" : String.Empty)} away..."),
-                        title: @"Unable to add reminder",
-                        thumbnail: Generics.URL_REMINDER_GENERIC
+                            body: $"I was unable able to add the mute you gave me. That's more than {maxDays} day{(maxDays > 0 ? @"s" : String.Empty)} away..."),
+                        title: @"Unable to add mute",
+                        thumbnail: Generics.URL_MUTE_GENERIC
                     );
 
                 sendErrorEmbed = true;
@@ -188,107 +188,111 @@ namespace BigSister.Reminders
             {   // Everything is good in the world... except that the world is burning, but that's not something we're worried about here, for
                 // now...
 
+
+                //this is really just here so the error embed bit doesn't yell at me
                 embed = Generics.GenericEmbedTemplate(
                         color: Generics.PositiveColor,
                         description: Generics.PositiveDirectResponseTemplate(
                             mention: ctx.Member.Mention,
-                            body: @"I added the reminder you gave me!"),
-                        title: @"Add reminder",
-                        thumbnail: Generics.URL_REMINDER_GENERIC
+                            body: @"I added the mute you gave me! You shouldn't see this!"),
+                        title: @"User muted",
+                        thumbnail: Generics.URL_MUTE_GENERIC
                     );
 
-                Reminder reminder = new Reminder(
+                Mute mute = new Mute(
                     originalMessageId: ctx.Message.Id.ToString(),
                     text: messageString.Length.Equals(0) ? @"n/a" : messageString.ToString(),
                     time: (int)(dto.ToUnixTimeSeconds() / 60),
-                    user: ctx.Member.Id,
-                    channel: ctx.Channel.Id,
-                    usersToNotify: mentions.Select(a => Generics.GetMention(a)).ToArray());
+                    user: targetUser.Id,
+                    guild: ctx.Guild.Id
+                    );
 
-                embed.AddField(@"User", ctx.Member.Mention, true);
+                //don't need these either
+                /*
+                embed.AddField(@"User", ctx.Message.MentionedUsers[0].Mention, true);
                 embed.AddField(@"Time (UTC)", dto.ToString(Generics.DateFormat), true);
                 embed.AddField(@"Remaining time", Generics.GetRemainingTime(dto), true);
-                embed.AddField(@"Notification Identifier", reminder.OriginalMessageId.ToString(), false);
+                embed.AddField(@"Notification Identifier", mute.OriginalMessageId.ToString(), false);
+                */
 
-                if (GetUsersToNotify(reminder.UsersToNotify, out string mentionsString))
-                {
-                    embed.AddField(@"Users to mention", mentionsString, false);
-                }
+                // add muted role to listed user
+                DiscordMember member = await ctx.Guild.GetMemberAsync(mute.User);
+                DiscordRole role = ctx.Guild.GetRole(Program.Settings.MuteRoleID[mute.Guild]); //TODO need a better way to get muted role ID
+                await member.GrantRoleAsync(role);
 
                 // Let's build the command.
                 using var command = new SqliteCommand(BotDatabase.Instance.DataSource)
                 {
-                    CommandText = QQ_AddReminder
+                    CommandText = QQ_AddMute
                 };
 
-                SqliteParameter a = new SqliteParameter("$id", reminder.OriginalMessageId.ToString())
+                SqliteParameter a = new SqliteParameter("$id", mute.OriginalMessageId.ToString())
                 {
                     DbType = DbType.String
                 };
 
-                SqliteParameter b = new SqliteParameter("$userid", reminder.User)
+                SqliteParameter b = new SqliteParameter("$userid", mute.User)
                 {
                     DbType = DbType.String
                 };
 
-                SqliteParameter c = new SqliteParameter("$channelid", reminder.Channel)
+                SqliteParameter c = new SqliteParameter("$message", mute.Text)
                 {
                     DbType = DbType.String
                 };
 
-                SqliteParameter d = new SqliteParameter("$message", reminder.Text)
-                {
-                    DbType = DbType.String
-                };
-
-                SqliteParameter e = new SqliteParameter("$time", reminder.Time)
+                SqliteParameter d = new SqliteParameter("$time", mute.Time)
                 {
                     DbType = DbType.Int32
                 };
-
-                var stringBuilder = new StringBuilder();
-                stringBuilder.AppendJoin(' ', reminder.UsersToNotify);
-
-                SqliteParameter f = new SqliteParameter("$mention", stringBuilder.ToString())
+                SqliteParameter e = new SqliteParameter("guild", mute.Guild)
                 {
                     DbType = DbType.String
                 };
 
-                command.Parameters.AddRange(new SqliteParameter[] { a, b, c, d, e, f });
+
+                command.Parameters.AddRange(new SqliteParameter[] { a, b, c, d, e});
 
                 await BotDatabase.Instance.ExecuteNonQuery(command);
                 // Send the response.
-                await ctx.Channel.SendMessageAsync(embed: embed);
+
+                //redirect to action channel
+                DiscordChannel sendChannel = await Program.BotClient.GetChannelAsync(Program.Settings.ActionChannelId);
+                //make a message to report the action
+                await sendChannel.SendMessageAsync(content: $"**Muted User**: {Generics.GetMention(mute.User)}\nStaff: {Generics.GetMention(ctx.User.Id)}\nRemaining time: {Generics.GetRemainingTime(dto)}\nReason: {mute.Text}");
+
+                //await sendChannel.SendMessageAsync(embed: embed); //formerly sending as an embed
             }
 
             if (sendErrorEmbed)
             {
-                var a = ctx.Channel.SendMessageAsync(embed: embed);
-                var b = GenericResponses.HandleInvalidArguments(ctx);
+                //send the error if one occured
+                await ctx.Channel.SendMessageAsync(embed: embed);
+                //var b = GenericResponses.HandleInvalidArguments(ctx);
 
-                await Task.WhenAll(a, b);
+                //await Task.WhenAll(a, b);
             }
         }
 
-        /// <summary>Remove a reminder if it exists.</summary>
-        public static async Task RemoveReminder(CommandContext ctx, Reminder reminder)
+        /// <summary>Remove a mute if it exists.</summary>
+        public static async Task RemoveMute(CommandContext ctx, Mute mute)
         {
-            // It's a reminder, so let's remove it.
+            // It's a mute, so let's remove it.
 
             // Let's build the command.
             using var command = new SqliteCommand(BotDatabase.Instance.DataSource)
             {
-                CommandText = QQ_RemoveReminder
+                CommandText = QQ_RemoveMute
             };
 
-            SqliteParameter a = new SqliteParameter("$id", reminder.OriginalMessageId.ToString())
+            SqliteParameter a = new SqliteParameter("$id", mute.OriginalMessageId.ToString())
             {
                 DbType = DbType.String
             };
 
             command.Parameters.Add(a);
 
-            // Now that we have the old reminder, let's remove the old one from the database.
+            // Now that we have the old mute, let's remove the old one from the database.
             await BotDatabase.Instance.ExecuteNonQuery(command);
 
             // Now let's respond.
@@ -297,37 +301,82 @@ namespace BigSister.Reminders
                 color: Generics.PositiveColor,
                 description: Generics.PositiveDirectResponseTemplate(
                     mention: ctx.Member.Mention,
-                    @"I was able to remove the reminder you gave me!"),
-                thumbnail: Generics.URL_REMINDER_DELETED,
-                title: @"Removed reminder"));
+                    @"I was able to remove the mute you gave me!"),
+                thumbnail: Generics.URL_MUTE_DELETED,
+                title: @"Removed mute"));
 
-            DateTimeOffset dto = DateTimeOffset.FromUnixTimeSeconds(reminder.Time * 60); // The reminder's DTO.
-            TimeSpan remainingTime = dto.Subtract(DateTimeOffset.UtcNow); // The remaining time left for the reminder.
-            string originalAuthorMention = Generics.GetMention(reminder.User);
+            DateTimeOffset dto = DateTimeOffset.FromUnixTimeSeconds(mute.Time * 60); // The mute's DTO.
+            TimeSpan remainingTime = dto.Subtract(DateTimeOffset.UtcNow); // The remaining time left for the mute.
+            string originalAuthorMention = Generics.GetMention(mute.User);
 
             discordEmbedBuilder.AddField(@"User", originalAuthorMention, true);
             discordEmbedBuilder.AddField(@"Time (UTC)", dto.ToString(Generics.DateFormat), true);
-            discordEmbedBuilder.AddField(@"Notification Identifier", reminder.OriginalMessageId.ToString(), false);
-            if (GetUsersToNotify(reminder.UsersToNotify, out string mentionsString))
-            {
-                discordEmbedBuilder.AddField(@"Users to mention", mentionsString, false);
-            }
+            discordEmbedBuilder.AddField(@"Mute Identifier", mute.OriginalMessageId.ToString(), false);
             discordEmbedBuilder.AddField(@"Remaining time", Generics.GetRemainingTime(dto), false);
-            discordEmbedBuilder.AddField(@"Message", reminder.Text, false);
+            discordEmbedBuilder.AddField(@"Message", mute.Text, false);
 
             // Send the response.
             await ctx.Channel.SendMessageAsync(embed: discordEmbedBuilder);
         }
 
-        /// <summary>Check if a provided ID is a reminder.</summary>
-        public static async Task<bool> IsReminder(string id)
+        public static async Task RemoveUserMute(CommandContext ctx, DiscordMember user)
+        {
+           
+
+            // Let's build the command.
+            using var command = new SqliteCommand(BotDatabase.Instance.DataSource)
+            {
+                CommandText = QQ_UserRemoveMute
+            };
+
+            SqliteParameter a = new SqliteParameter("$userid", user.Id)
+            {
+                DbType = DbType.String
+            };
+            SqliteParameter b = new SqliteParameter("$guild", ctx.Guild.Id)
+            {
+                DbType = DbType.String
+            };
+
+            command.Parameters.AddRange(new SqliteParameter[] { a, b });
+
+
+
+            // and run it
+            await BotDatabase.Instance.ExecuteNonQuery(command);
+
+            if (ctx.Guild.Members.ContainsKey(user.Id))
+            {
+                DiscordRole role = ctx.Guild.GetRole(Program.Settings.MuteRoleID[ctx.Guild.Id]);
+                await user.RevokeRoleAsync(role);
+            }
+
+
+            // Now let's respond.
+
+            var discordEmbedBuilder = new DiscordEmbedBuilder(Generics.GenericEmbedTemplate(
+                color: Generics.PositiveColor,
+                description: Generics.PositiveDirectResponseTemplate(
+                    mention: ctx.Member.Mention,
+                    @"I removed any mutes on this user!"),
+                thumbnail: Generics.URL_MUTE_DELETED,
+                title: @"Removed mute"));
+
+            discordEmbedBuilder.AddField(@"User", user.Mention, true);
+
+            // Send the response.
+            await ctx.Channel.SendMessageAsync(embed: discordEmbedBuilder);
+        }
+
+        /// <summary>Check if a provided ID is a mute.</summary>
+        public static async Task<bool> IsMute(string id)
         {
             bool hasItem_returnVal;
 
             // Let's build the command.
             using var command = new SqliteCommand(BotDatabase.Instance.DataSource)
             {
-                CommandText = QQ_ReminderExists
+                CommandText = QQ_MuteExists
             };
 
             SqliteParameter a = new SqliteParameter("$id", id)
@@ -372,14 +421,71 @@ namespace BigSister.Reminders
             return hasItem_returnVal;
         }
 
-        public static async Task<Reminder> GetReminderFromDatabase(string id)
+        /// <summary>Check if a provided ID is a mute.</summary>
+        public static async Task<bool> IsMutedUser(ulong id, ulong gid)
         {
-            Reminder item_returnVal;
+            bool hasItem_returnVal;
 
             // Let's build the command.
             using var command = new SqliteCommand(BotDatabase.Instance.DataSource)
             {
-                CommandText = QQ_GetReminderFromId
+                CommandText = QQ_UserMuteExists
+            };
+
+            SqliteParameter a = new SqliteParameter("$userid", id)
+            {
+                DbType = DbType.String
+            };
+            SqliteParameter b = new SqliteParameter("$guild", gid)
+            {
+                DbType = DbType.String
+            };
+
+            command.Parameters.AddRange(new SqliteParameter[] { a, b});
+
+            object returnVal = await BotDatabase.Instance.ExecuteReaderAsync(command,
+                    processAction: delegate (SqliteDataReader reader)
+                    {
+                        object a;
+
+                        if (reader.Read())
+                        {   // Let's read the database.
+                            a = reader.GetValue(0);
+                        }
+                        else
+                        {
+                            a = null;
+                        }
+
+                        return a;
+                    });
+
+            int returnValC;
+
+            // Try to convert it to an int. If it throws an exception for some reason, chances are it's not what we're looking for.
+            try
+            {
+                returnValC = Convert.ToInt32(returnVal);
+            }
+            catch
+            {   // Probably not an int, so let's set the value to something we absolutely know will return as false.
+                returnValC = -1;
+            }
+
+            // Let's get the return value by checking if the returnval == 1
+            hasItem_returnVal = returnValC == 1;
+
+            return hasItem_returnVal;
+        }
+
+        public static async Task<Mute> GetMuteFromDatabase(string id)
+        {
+            Mute item_returnVal;
+
+            // Let's build the command.
+            using var command = new SqliteCommand(BotDatabase.Instance.DataSource)
+            {
+                CommandText = QQ_GetMuteFromId
             };
 
             SqliteParameter a = new SqliteParameter("$id", id)
@@ -390,28 +496,28 @@ namespace BigSister.Reminders
             command.Parameters.Add(a);
 
             // Get a single item from the list.
-            // We're using a delegate that supposedly returns a list of reminders, but in this case it should only return one.
-            item_returnVal = ((Reminder[])await BotDatabase.Instance.ExecuteReaderAsync(command,
-                    processAction: readReminders)).SingleOrDefault();
+            // We're using a delegate that supposedly returns a list of mutes, but in this case it should only return one.
+            item_returnVal = ((Mute[])await BotDatabase.Instance.ExecuteReaderAsync(command,
+                    processAction: readMutes)).SingleOrDefault();
 
             // Check if it's default aka nothing found (for some reason). We should've already checked that this item exists previously, but I still
             // want to be super careful
-            if (item_returnVal.Equals(default(Reminder)))
+            if (item_returnVal.Equals(default(Mute)))
             {   // Equals default.
-                item_returnVal = Reminder.Invalid;
+                item_returnVal = Mute.Invalid;
             }
 
             return item_returnVal;
         }
 
-        /// <summary>List all the reminders</summary>
-        public static async Task ListReminders(CommandContext ctx)
+        /// <summary>List all the mutes</summary>
+        public static async Task ListMutes(CommandContext ctx)
         {
-            Reminder[] reminders = await ReadTable();
+            Mute[] mutes = await ReadTable();
 
             // Check if there are any notifications. If there are none, let the user know.
-            if (reminders.Length > 0)
-            {   // There are reminders.
+            if (mutes.Length > 0)
+            {   // There are mutes.
                 var interactivity = Program.BotClient.GetInteractivity();
                 List<Page> pages = new List<Page>();
 
@@ -421,23 +527,19 @@ namespace BigSister.Reminders
                 int curPage = 1;
 
                 // Paginate all the results.
-                const int REMINDERS_PER_PAGE = 5;
-                for (int i = 0; i < reminders.Length; i++)
+                const int MUTES_PER_PAGE = 5;
+                for (int i = 0; i < mutes.Length; i++)
                 {
-                    Reminder reminder = reminders[i];
+                    Mute mute = mutes[i];
 
 
 
-                    var dto = DateTimeOffset.FromUnixTimeSeconds(reminder.Time * 60);
+                    var dto = DateTimeOffset.FromUnixTimeSeconds(mute.Time * 60);
 
                     var valueStringBuilder = new StringBuilder();
 
-                    valueStringBuilder.Append($"{Generics.GetMention(reminder.User)}: {reminder.Text}\n");
-                    if (GetUsersToNotify(reminder.UsersToNotify, out string mentionsString))
-                    {
-                        valueStringBuilder.Append($"**Users to mention:** {mentionsString}\n");
-                    }
-                    valueStringBuilder.Append($"**Id:** {reminder.OriginalMessageId}\n");
+                    valueStringBuilder.Append($"{Generics.GetMention(mute.User)}: {mute.Text}\n");
+                    valueStringBuilder.Append($"**Id:** {mute.OriginalMessageId}\n");
                     valueStringBuilder.Append($"**Remaining time:** {Generics.GetRemainingTime(dto)}");
 
                     #region a bunny
@@ -472,15 +574,15 @@ namespace BigSister.Reminders
                     deb.AddField(name, valueStringBuilder.ToString());
                     count++;
 
-                    if (count == REMINDERS_PER_PAGE || i == reminders.Length - 1)
+                    if (count == MUTES_PER_PAGE || i == mutes.Length - 1)
                     {   // Create a new page.
                         deb.WithDescription(Generics.NeutralDirectResponseTemplate(
                             mention: ctx.User.Mention,
                             body: $"Hello {ctx.Member.Mention}, please note you are the only one who can react to this message.\n\n" +
-                            $"**Showing {count} reminders out of a total of {reminders.Length}.**"));
-                        deb.WithTitle($"Reminders Page {curPage}/{Math.Ceiling((float)reminders.Length / (float)REMINDERS_PER_PAGE)}");
+                            $"**Showing {count} mutes out of a total of {mutes.Length}.**"));
+                        deb.WithTitle($"Mutess Page {curPage}/{Math.Ceiling((float)mutes.Length / (float)MUTES_PER_PAGE)}");
                         deb.WithColor(Generics.NeutralColor);
-                        deb.WithThumbnail(Generics.URL_REMINDER_GENERIC);
+                        deb.WithThumbnail(Generics.URL_MUTE_GENERIC);
 
                         pages.Add(new Page(embed: deb));
                         count = 0;
@@ -493,62 +595,71 @@ namespace BigSister.Reminders
                 await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages, emojis: Generics.DefaultPaginationEmojis);
             }
             else
-            {   // There are no reminders.
+            {   // There are no mutes.
                 await ctx.Channel.SendMessageAsync(
                         embed: Generics.GenericEmbedTemplate(
                             color: Generics.NeutralColor,
                             description: Generics.NeutralDirectResponseTemplate(
                                 mention: ctx.Member.Mention,
-                                body: "there are no reminders."),
+                                body: "there are no mutes."),
                             thumbnail: Generics.URL_SPEECH_BUBBLE,
-                            title: "Reminders"));
+                            title: "Mutes"));
 
             }
         }
 
-        static readonly Func<SqliteDataReader, object> readReminders =
+        static readonly Func<SqliteDataReader, object> readMutes =
             delegate (SqliteDataReader reader)
                 {
-                    var reminderList = new List<Reminder>();
+                    var muteList = new List<Mute>();
 
                     while (reader.Read())
-                    {   // Generate a reminder per each row.
-                        var r = new Reminder(
+                    {   // Generate a mute per each row.
+                        var r = new Mute(
                             originalMessageId: reader.GetString(0),
                             user: ulong.Parse(reader.GetString(1)),
-                            channel: ulong.Parse(reader.GetString(2)),
-                            text: reader.GetString(3),
-                            time: reader.GetInt32(4),
-                            usersToNotify: reader.GetString(5).Split(' ')
+                            text: reader.GetString(2),
+                            time: reader.GetInt32(3),
+                            guild: ulong.Parse(reader.GetString(4))
                         );
 
-                        reminderList.Add(r);
+                        muteList.Add(r);
                     }
 
-                    return reminderList.ToArray();
+                    return muteList.ToArray();
                 };
 
 
         /// <summary>Read the table and return as an array.</summary>
-        public static async Task<Reminder[]> ReadTable()
+        public static async Task<Mute[]> ReadTable()
         {
             using var command = new SqliteCommand(BotDatabase.Instance.DataSource)
             {
                 CommandText = QQ_ReadTable
             };
 
-            Reminder[] returnVal = (Reminder[])await BotDatabase.Instance.ExecuteReaderAsync(command,
-                processAction: readReminders);
+            Mute[] returnVal = (Mute[])await BotDatabase.Instance.ExecuteReaderAsync(command,
+                processAction: readMutes);
 
             return returnVal;
         }
 
-        /// <summary>Find any reminders that need to be triggered and trigger them.</summary>
-        static async Task LookTriggerReminders(int timeNowMinutes)
+        public static async Task CheckMuteEvade(DSharpPlus.DiscordClient c, DSharpPlus.EventArgs.GuildMemberAddEventArgs ctx)
+        {
+            if(await IsMutedUser(ctx.Member.Id, ctx.Guild.Id))
+            {
+                DiscordMember member = await ctx.Guild.GetMemberAsync(ctx.Member.Id);
+                DiscordRole role = ctx.Guild.GetRole(Program.Settings.MuteRoleID[ctx.Guild.Id]); 
+                await member.GrantRoleAsync(role);
+            }
+        }
+
+        /// <summary>Find any mutes that need to be triggered and trigger them.</summary>
+        static async Task LookTriggerMutes(int timeNowMinutes)
         {
             using var command = new SqliteCommand(BotDatabase.Instance.DataSource)
             {
-                CommandText = QQ_CheckRemindersElapsed
+                CommandText = QQ_CheckMutesElapsed
             };
 
             SqliteParameter a = new SqliteParameter("$timenow", timeNowMinutes)
@@ -558,40 +669,40 @@ namespace BigSister.Reminders
 
             command.Parameters.Add(a);
 
-            Reminder[] pendingReminders = (Reminder[])await BotDatabase.Instance.ExecuteReaderAsync(command,
-                processAction: readReminders);
+            Mute[] pendingMutes = (Mute[])await BotDatabase.Instance.ExecuteReaderAsync(command,
+                processAction: readMutes);
 
-            // Check if there are any reminders
-            if (pendingReminders.Length > 0)
-            {   // There are reminders.
+            // Check if there are any mutes
+            if (pendingMutes.Length > 0)
+            {   // There are mutes.
                 using var delCommand = new SqliteCommand(BotDatabase.Instance.DataSource)
                 {
-                    CommandText = QQ_DeleteRemindersElapsed
+                    CommandText = QQ_DeleteMutesElapsed
                 };
 
                 delCommand.Parameters.Add(a);
 
-                Task[] tasks = new Task[pendingReminders.Length + 1];
+                Task[] tasks = new Task[pendingMutes.Length + 1];
                 tasks[0] = BotDatabase.Instance.ExecuteNonQuery(delCommand);
 
-                for (int i = 0; i < pendingReminders.Length; i++)
+                for (int i = 0; i < pendingMutes.Length; i++)
                 {
-                    var reminder = pendingReminders[i];
+                    var mute = pendingMutes[i];
 
 
-                    DateTimeOffset reminderTime = DateTimeOffset.FromUnixTimeSeconds(reminder.Time * 60);
+                    DateTimeOffset muteTime = DateTimeOffset.FromUnixTimeSeconds(mute.Time * 60);
                     DateTimeOffset utcNow = DateTimeOffset.UtcNow;
 
                     var stringBuilder = new StringBuilder();
-                    TimeSpan lateBy = utcNow.Subtract(reminderTime);
+                    TimeSpan lateBy = utcNow.Subtract(muteTime);
 
                     DiscordEmbedBuilder deb = new DiscordEmbedBuilder()
                     {
-                        Title = "Notification",
-                        Description = reminder.Text
+                        Title = "User Unmuted",
+                        Description = Generics.GetMention(mute.User)
                     };
 
-                    deb.WithThumbnail(Generics.URL_REMINDER_EXCLAIM);
+                    deb.WithThumbnail(Generics.URL_MUTE_EXCLAIM);
                     deb.AddField(@"Late by",
                         value: String.Format("{0}day {1}hr {2}min {3}sec",
                             /*0*/ lateBy.Days,
@@ -599,15 +710,23 @@ namespace BigSister.Reminders
                             /*2*/ lateBy.Minutes,
                             /*3*/ lateBy.Seconds));
 
-                    // Get all the people we need to remind.
-                    stringBuilder.Append(Generics.GetMention(reminder.User));
 
-                    Array.ForEach(reminder.UsersToNotify,            // For every user (a), append them to sb in mention format <@id>.
-                        a => stringBuilder.Append($"{a} "));
+                    DiscordGuild guild = await Program.BotClient.GetGuildAsync(mute.Guild);
+                    if (guild.Members.ContainsKey(mute.User))
+                    {
+                        DiscordMember member = await guild.GetMemberAsync(mute.User);
+                        DiscordRole role = guild.GetRole(Program.Settings.MuteRoleID[mute.Guild]);
+                        await member.RevokeRoleAsync(role);
+                    }
+                    else
+                    {
+                        deb.AddField("Note", value: "User has left the server");
+                    }
 
 
+                        
 
-                    tasks[i + 1] = (await Program.BotClient.GetChannelAsync(reminder.Channel))
+                    tasks[i + 1] = (await Program.BotClient.GetChannelAsync(Program.Settings.ActionChannelId))
                                     .SendMessageAsync(
                                         content: stringBuilder.ToString(),
                                         embed: deb.Build());
@@ -617,7 +736,7 @@ namespace BigSister.Reminders
             }
         }
 
-        #endregion ReminderCommands.cs
+        #endregion MuteCommands.cs
 
         /// <summary>Interpret time value and increment a DateTimeOffset based on the values.</summary>
         /// <param name="measureString">The measure or numeric value.</param>
@@ -699,8 +818,8 @@ namespace BigSister.Reminders
             return usersFound_returnVal;
         }
 
-        internal static async void ReminderTimer_Elapsed(object sender, ElapsedEventArgs e)
-            => await LookTriggerReminders(
+        internal static async void MuteTimer_Elapsed(object sender, ElapsedEventArgs e)
+            => await LookTriggerMutes(
                  (int)(DateTimeOffset.UtcNow.ToUnixTimeSeconds() / 60));
     }
 }

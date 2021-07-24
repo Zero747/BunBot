@@ -29,6 +29,15 @@ namespace BigSister.Settings
         public ulong FilterChannelId = DEFAULT_CHANNEL;
 
         // ----------------
+        // Mute
+
+        /// <summary>Maximum mute time allowed in months.</summary>
+        public int MaxMuteTimeDays = 7;
+        public Dictionary<ulong, ulong> MuteRoleID = new Dictionary<ulong, ulong>(){
+            {564290157524680716, 778929358491353138}, //dev server
+            {214523379766525963, 793897525509095477} //rimworld discord
+            };
+        // ----------------
         // Reminder
 
         /// <summary>Maximum reminder time allowed in months.</summary>
@@ -60,6 +69,9 @@ namespace BigSister.Settings
         public int RimboardReactionsNeeded = 5;
         /// <summary>Number of reactions needed to pin a message in Rimboard.</summary>
         public int RimboardPinReactionsNeeded = 10;
+        /// Not set to any default channels. Just want to initiate it so it isn't null.
+        public List<ulong> RimboardExcludedChannels = new List<ulong>();
+
 
         // ----------------
         // FunStuff

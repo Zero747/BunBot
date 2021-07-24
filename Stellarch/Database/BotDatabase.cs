@@ -24,6 +24,8 @@
 //  |   Snowflake of message            |   Snowflake of role                   |   If the EmoteData is a unicode value |   character or a ulong id.            |
 //  =============================================================================================================================================================
 //
+// There's a 5th table for mutes but I don't want to go mad with formatting, it's basically reminders but guild id instead of channel ID and no mentions
+
                           
 
 using System;
@@ -150,6 +152,22 @@ namespace BigSister.Database
                             `PinnedMessageId`          TEXT NOT NULL, -- Snowflake of pinned aka reposted message.
                             `OriginalMessageChannelId` TEXT NOT NULL, -- Snowflake of channel of original message.
                             `PinnedMessageChannelId`   TEXT NOT NULL  -- Snowflake of channel of pinned aka reposted message.
+                        );
+                    ";
+
+                command.ExecuteNonQuery();
+
+                // --------------------------------
+                // Mute table.
+
+                command.CommandText =
+                    @"
+                        CREATE TABLE `Mutes` (
+	                        `Id`            TEXT    NOT NULL, -- Snowflake of the original message that created the mute.
+	                        `UserId`        TEXT    NOT NULL, -- Snowflake of muted user
+	                        `Message`       TEXT            , -- mute reason message
+	                        `TriggerTime`   INTEGER NOT NULL, -- unmute trigger timestamp in minutes
+                            `Guild`         TEXT    NOT NULL  -- Guild (server) in which user was muted.
                         );
                     ";
 

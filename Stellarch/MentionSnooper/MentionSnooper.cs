@@ -21,9 +21,11 @@ namespace BigSister.MentionSnooper
         internal static async Task BotClientMessageCreated(DiscordClient botClient, MessageCreateEventArgs e)
         {
             if (Program.Settings.AutoWarnSnoopEnabled &&
-                !e.Author.IsCurrent &&
                 e.Channel.Id == Program.Settings.ActionChannelId)
-            {   // Only continue if this is the action channel and wasn't sent by the bot.
+            {   // Only continue if this is the action channel
+
+                //IMPORTANT NOTE - Floppy will snoop her own messages sent in the action channel. Mentions in embeds don't count and won't cause any response, but standard ones will. Below is the check that would disable this 
+                //!e.Author.IsCurrent &&
 
                 // ----
                 // Get the DiscordMember of each user.
@@ -135,7 +137,7 @@ namespace BigSister.MentionSnooper
                     var stringBuilder = new StringBuilder();
 
                     // Build header.
-                    stringBuilder.Append($"__**{Generics.GetMention(snowflake)} has had {mentionList.Count + 1} total mention{(mentionList.Count == 1 ? String.Empty : @"s")} (including the most recent one)" +
+                    stringBuilder.Append($"__**{Generics.GetMention(snowflake)} has had {mentionList.Count + 1} total mention{(mentionList.Count == 1 ? String.Empty : @"s")} (including the most recent one) " +
                         $"in {channel.Mention} in the last {Program.Settings.MaxActionAgeMonths} months:**__\n");
 
                     // Build link list.

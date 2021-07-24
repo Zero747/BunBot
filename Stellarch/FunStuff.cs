@@ -105,24 +105,23 @@ namespace BigSister
 
         static readonly List<FunMessage> funMessages = new List<FunMessage>
         {
-            new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"🐇"), Message = "Momu by Rekasa", MinTime = TimeSpan.FromMinutes(1), MaxTime = TimeSpan.FromMinutes(3)},
-            new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"🐇"), Message = "Momu by Rekasa", MinTime = TimeSpan.FromMinutes(1), MaxTime = TimeSpan.FromMinutes(3)},
-            new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"🐇"), Message = "Momu by Rekasa", MinTime = TimeSpan.FromMinutes(1), MaxTime = TimeSpan.FromMinutes(3)},  
             // Weight of 3x.
 
-            new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"🧹"), Message = "Cleaning up the grounds.", MinTime = TimeSpan.FromMinutes(1), MaxTime = TimeSpan.FromMinutes(3) },
-            new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"🧹"), Message = "Cleaning up the grounds.", MinTime = TimeSpan.FromMinutes(1), MaxTime = TimeSpan.FromMinutes(3) }, 
+            new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"🧹"), Message = "Cleaning up the grounds", MinTime = TimeSpan.FromMinutes(1), MaxTime = TimeSpan.FromMinutes(3) },
+            new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"🧹"), Message = "Cleaning up the grounds", MinTime = TimeSpan.FromMinutes(1), MaxTime = TimeSpan.FromMinutes(3) }, 
             // Weight of 2x. 
             
-            new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"🗡️"), Message = "Taking care of raiders." },
+            new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"🗡️"), Message = "Taking care of raiders" },
+            new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"🐇"), Message = "Hopping around" },
             new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"🎯"), Message = "Spending time in the rec room..." },
             new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"☁️"), Message = "Cloudwatching..." },
             new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"🕒"), Message = "Wandering..." },
-            new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"💀"), Message = "Disposing of raider bodies."},
-            new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"🥗"),  Message = "Eating some vegetable medley."},
-            new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"💓"), Message = "Healing after a raid."},
-            new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"🩺"),  Message = "Healing a colonist."},
-            new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"👺"),  Message = "Having a mental break!"},
+            new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"💀"), Message = "Disposing of raider bodies"},
+            new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"🥗"),  Message = "Eating some salad"},
+            new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"💓"), Message = "Healing after a raid"},
+            new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"🩺"),  Message = "Healing a colonist"},
+            new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"🤬"),  Message = "Having a mental break!"},
+            new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"🦾"),  Message = "Installing bionics"},
             new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"🔬"),  Message = "....Researching....", MinTime = TimeSpan.FromMinutes(5), MaxTime= TimeSpan.FromMinutes(7)},
             new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"😀"),  Message = "Repopulating...", MinTime = TimeSpan.FromMinutes(1), MaxTime = TimeSpan.FromMinutes(2)},
         };

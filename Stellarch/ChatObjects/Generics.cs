@@ -33,6 +33,10 @@ namespace BigSister.ChatObjects
         public const string URL_REMINDER_EXCLAIM = @"https://i.imgur.com/4BmoFjQ.png";
         public const string URL_REMINDER_DELETED = @"https://i.imgur.com/IqG56C4.png";
 
+        public const string URL_MUTE_GENERIC = @"https://i.imgur.com/IqG56C4.png";
+        public const string URL_MUTE_EXCLAIM = @"https://i.imgur.com/IqG56C4.png";
+        public const string URL_MUTE_DELETED = @"https://i.imgur.com/IqG56C4.png";
+
         public const string DateFormat = @"yyyy-MMM-dd HH:mm";
 
         public static PaginationEmojis DefaultPaginationEmojis = new PaginationEmojis

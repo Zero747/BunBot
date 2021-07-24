@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Timers;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
+using BigSister.Mutes;
 using BigSister.Reminders;
 using BigSister.Commands;
 using DSharpPlus.Entities;
@@ -19,6 +20,7 @@ namespace BigSister
     public static class Bot
     {
         static Timer reminderTimer;
+        static Timer muteTimer;
 
         public static async Task RunAsync(DiscordClient botClient)
         {
@@ -29,10 +31,17 @@ namespace BigSister
                 AutoReset = true
             };
 
+            muteTimer = new Timer
+            {
+                Interval = 60000, // 1 minute
+                AutoReset = true
+            };
+
             RegisterCommands(botClient);
             RegisterEvents(botClient);
 
             reminderTimer.Start();
+            muteTimer.Start();
 
             await botClient.ConnectAsync();
             await Task.Delay(-1);
@@ -43,6 +52,7 @@ namespace BigSister
             var commands = botClient.GetCommandsNext();
 
             commands.RegisterCommands<FilterCommands>();
+            commands.RegisterCommands<MuteCommands>();
             commands.RegisterCommands<ReminderCommands>();
             commands.RegisterCommands<RoleRequestCommands>();
             commands.RegisterCommands<ModerationCommands>();
@@ -62,6 +72,11 @@ namespace BigSister
             // Snooper
             botClient.MessageCreated += MentionSnooper.MentionSnooper.BotClientMessageCreated;
             botClient.MessageUpdated += MentionSnooper.MentionSnooper.BotClientMessageUpdated;
+
+            // ----------------
+            // Mute 
+            botClient.GuildMemberAdded += MuteSystem.CheckMuteEvade;
+            muteTimer.Elapsed += MuteSystem.MuteTimer_Elapsed;
 
             // ----------------
             // Reminder timer

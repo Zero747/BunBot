@@ -77,7 +77,7 @@ namespace BigSister
         public static BotSettings Settings;
         public static DiscordClient BotClient;
 
-        public const string Prefix = @"~";
+        public const string Prefix = @"!"; // remmber to set back to ~ before release
 
         static SaveFile BotSettingsFile;
         static Identity Identity;
@@ -173,7 +173,8 @@ namespace BigSister
             {
                 Token = Identity.Authkey,
                 TokenType = TokenType.Bot,
-                AutoReconnect = true
+                AutoReconnect = true,
+                Intents = DiscordIntents.All
             };
 
             BotClient = new DiscordClient(botConfig);

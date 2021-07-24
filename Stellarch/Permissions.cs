@@ -145,7 +145,7 @@ namespace BigSister
                 {
                     // ----------------------------------------------
                     case 793897526377840660: // Rimworld Colonist  
-                    case 750984313813598218: // Dev Server Colonist
+                    case 841237358527250433: // Dev Server Colonist
 
                         role_returnVal |= Role.Colonist;
                         break;
@@ -166,7 +166,7 @@ namespace BigSister
                     case 214527027112312834: // Rimworld Moderator
                     case 795636990221221908: // Rimworld NEW MODERATOR
                     case 690206811961294934: // Rimworld . Role 
-                    case 673765713600708672: // Dev Server Moderator
+                    case 564291273729769492: // Dev Server Moderator
 
                         role_returnVal |= Role.Mod;
                         break;
@@ -190,7 +190,7 @@ namespace BigSister
                         break;
                     // ----------------------------------------------
                     case 793897525509095477: // Rimworld Muted
-                    case 750984286831902771: // Dev Server Muted
+                    case 778929358491353138: // Dev Server Muted
 
                         muted = true;
                         break;
