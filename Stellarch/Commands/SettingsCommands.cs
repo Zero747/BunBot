@@ -422,7 +422,7 @@ namespace BigSister.Commands
             }
         }
 
-        [Command("excluded-channels"), MinimumRole(Role.BotManager)]
+        [Command("rimboard-excluded-channels"), MinimumRole(Role.BotManager)]
         public async Task RimboardExcludeChannel(CommandContext ctx, string command, params DiscordChannel[] channels)
         {
             if (await Permissions.HandlePermissionsCheck(ctx))
