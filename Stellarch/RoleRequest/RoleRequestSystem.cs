@@ -249,7 +249,8 @@ namespace BigSister.RoleRequest
                                              DiscordEmoji emoji)
         {
             //short circuit, don't even try if the message isn't floppys 
-            if (!message.Author.IsCurrent)
+            var message_noCache = await channel.GetMessageAsync(message.Id);
+            if (!message_noCache.Author.IsCurrent)
             {
                 return;
             }
