@@ -355,8 +355,8 @@ namespace BigSister.Filter
                 // Send the paginated message.
                 await interactivity
                     .SendPaginatedMessageAsync(
-                        c: ctx.Channel,
-                        u: ctx.User,
+                        channel: ctx.Channel,
+                        user: ctx.User,
                         pages: pages,
                         emojis: Generics.DefaultPaginationEmojis);
             }
