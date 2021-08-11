@@ -51,5 +51,10 @@
     "RegexString": "^!lizard$",
     "Response": "https://i.imgur.com/x4kiB9N.png",
     "Cooldown": 900000
+  },
+  {
+    "RegexString": "^!freespeech$",
+    "Response": "https://imgs.xkcd.com/comics/free_speech.png",
+    "Cooldown": 900000
   }
 ]

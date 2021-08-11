@@ -174,7 +174,7 @@ namespace BigSister
                 Token = Identity.Authkey,
                 TokenType = TokenType.Bot,
                 AutoReconnect = true,
-                Intents = DiscordIntents.All
+                Intents = DiscordIntents.AllUnprivileged|DiscordIntents.GuildMembers
             };
 
             BotClient = new DiscordClient(botConfig);

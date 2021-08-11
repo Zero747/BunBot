@@ -139,8 +139,8 @@ namespace BigSister.MentionSnooper
 
                 await interactivity.SendPaginatedMessageAsync
                     (
-                        c: ctx.Channel,
-                        u: ctx.User,
+                        channel: ctx.Channel,
+                        user: ctx.User,
                         pages: pages,
                         emojis: Generics.DefaultPaginationEmojis
                     );
