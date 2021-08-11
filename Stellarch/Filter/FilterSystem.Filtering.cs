@@ -21,9 +21,10 @@ namespace BigSister.Filter
         public static event FilterTriggeredEventHandler FilterTriggered;
         public delegate Task FilterTriggeredEventHandler(FilterEventArgs e);
 
-        // Disable compiler warning for async code not having await. DSharpPlus demands that these two methods be an awaitable type, but I want them
-        // to be synchronous. Thanks a lot.
-        //#pragma warning disable CS1998
+        // Disable compiler warning for async code not having await. DSharpPlus demands that these two methods be an awaitable type
+        // but throwing them into the ether with a task.run should prevent the handler from timing out
+#pragma warning disable CS1998
+
         internal static async Task BotClient_MessageCreated(DiscordClient botClient, MessageCreateEventArgs e)
         {
             // Only continue if the channel isn't excluded, if the sender isn't the bot, and if this isn't sent in PMs.
@@ -33,7 +34,7 @@ namespace BigSister.Filter
                 e.Message.MessageType == MessageType.Default)
             {
                 //CheckMessage(e.Message);
-                await Task.Run(() => CheckMessage(e.Message));
+                Task.Run(() => CheckMessage(e.Message)).ConfigureAwait(false);
             }
         }
         internal static async Task BotClient_MessageUpdated(DiscordClient botClient, MessageUpdateEventArgs e)
@@ -45,10 +46,11 @@ namespace BigSister.Filter
                !e.Author.IsCurrent &&
                 e.Message.MessageType == MessageType.Default)
             {
-                await Task.Run( () => CheckMessage(e.Message));
+                Task.Run( () => CheckMessage(e.Message)).ConfigureAwait(false);
             }
         }
-        //#pragma warning restore CS1998
+
+#pragma warning restore CS1998
 
 
         /// <summary>Check the message against the filter.</summary>
