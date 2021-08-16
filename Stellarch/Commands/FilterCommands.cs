@@ -80,7 +80,6 @@ namespace BigSister.Commands
             // Check if they have the permissions to call this command.
             if (await Permissions.HandlePermissionsCheck(ctx))
             {
-                exclude = exclude.ToLower();
                 switch (action)
                 {
                     case "new":
