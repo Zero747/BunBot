@@ -34,7 +34,7 @@ namespace BigSister.Filter
                 e.Message.MessageType == MessageType.Default)
             {
                 //CheckMessage(e.Message);
-                Task.Run(() => CheckMessage(e.Message)).ConfigureAwait(false);
+                _ = Task.Run(() => CheckMessage(e.Message)).ConfigureAwait(false);
             }
         }
         internal static async Task BotClient_MessageUpdated(DiscordClient botClient, MessageUpdateEventArgs e)
@@ -46,7 +46,7 @@ namespace BigSister.Filter
                !e.Author.IsCurrent &&
                 e.Message.MessageType == MessageType.Default)
             {
-                Task.Run( () => CheckMessage(e.Message)).ConfigureAwait(false);
+                _ = Task.Run(() => CheckMessage(e.Message)).ConfigureAwait(false);
             }
         }
 

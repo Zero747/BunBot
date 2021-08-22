@@ -84,6 +84,7 @@ namespace BigSister.Commands
                 {
                     case "new":
                     case "add":
+                        exclude = exclude.ToLower();
                         if (!(await FilterSystem.HasItem(exclude)))
                         {   // The exclude doesn't exist already.
                             await FilterSystem.AddExclude(ctx, exclude);
