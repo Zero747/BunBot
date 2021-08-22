@@ -20,107 +20,116 @@ namespace BigSister.MentionSnooper
     {
         internal static async Task BotClientMessageCreated(DiscordClient botClient, MessageCreateEventArgs e)
         {
-            if (Program.Settings.AutoWarnSnoopEnabled &&
+            _ = Task.Run(async () =>
+            {
+
+                if (Program.Settings.AutoWarnSnoopEnabled &&
                 e.Channel.Id == Program.Settings.ActionChannelId)
-            {   // Only continue if this is the action channel
+                {   // Only continue if this is the action channel
 
-                //IMPORTANT NOTE - Floppy will snoop her own messages sent in the action channel. Mentions in embeds don't count and won't cause any response, but standard ones will. Below is the check that would disable this 
-                //!e.Author.IsCurrent &&
-
-                // ----
-                // Get the DiscordMember of each user.
-
-                var mentionedColonistIds = new List<ulong>();
-
-                foreach (var user in GetMessageMentions(e.Message.Content))
-                {
-                    try
-                    {
-                        var member = await e.Guild.GetMemberAsync(user);
-
-                        var userPerms = new UserPermissions(member.Roles);
-
-                        if (!userPerms.IsRoleOrHigher(Role.CS) && !member.IsBot)
-                        {   // Only add this person if they're not CS or higher AND not a bot.
-
-                            mentionedColonistIds.Add(member.Id);
-                        } // end if
-                    }
-                    catch
-                    {   // Most likely they're not in the guild if an exception is thrown, so let's just add their id to the list anyway.
-                        mentionedColonistIds.Add(user);
-                    }
-                } // end foreach
-
-                // ----
-                // Great, now we have all our mentioned colonists. Let's just make sure there's no duplicates.
-                mentionedColonistIds = mentionedColonistIds.Distinct().ToList();
-
-                if (mentionedColonistIds.Count > 0)
-                {   // Only continue if there's actually mentioned colonists.
-
-                    var actionChannel = e.Channel;
-
-                    // Create a dictionary based on a DiscordMember and all of the messages mentioning him or her.
-                    Dictionary<ulong, List<DiscordMessage>> warnDict =
-                        await QueryMemberMentions(mentionedColonistIds, actionChannel, Program.Settings.MaxActionAgeMonths, e.Message);
+                    //IMPORTANT NOTE - Floppy will snoop her own messages sent in the action channel. Mentions in embeds don't count and won't cause any response, but standard ones will. Below is the check that would disable this 
+                    //!e.Author.IsCurrent &&
 
                     // ----
-                    // So at this point, we know there's at least one person who has been warned (0,inf) times.
-                    // Let's notify the action channel.
+                    // Get the DiscordMember of each user.
 
-                    await NotifyActionLogsMentionsFound(warnDict, actionChannel);
-                } // end if
-            } // end if
-        } // end method
+                    var mentionedColonistIds = new List<ulong>();
 
-        internal static async Task BotClientMessageUpdated(DiscordClient botClient, MessageUpdateEventArgs e)
-        {
-            if (Program.Settings.AutoWarnSnoopEnabled &&
-                !e.Author.IsCurrent &&
-                e.Channel.Id == Program.Settings.ActionChannelId)
-            {   // We only want to continue through here if warn snooping is enabled, the bot isn't self-triggering, and we're in #action-logs.
-
-                // Do not used cache messages in case something changed. Let's get messages directly from the server.
-                var oldMessage = e.MessageBefore;
-                var newMessage = e.Message;
-
-                // If either of the messages aren't cached, we should just stop right here. We can't tell if any new mentions were added, so we'll
-                // end up causing more spam therefore more harm. It's unfortunate because we should always try to find some way to interact with
-                // some kind of data, but this is a hard limitation I've ran into.
-
-                if (!(oldMessage is null) && !(newMessage is null))
-                {   // Only continue if neither message is null.
-                    var mentionUsers_old = GetMessageMentions(oldMessage.Content);
-                    var mentionUsers_new = GetMessageMentions(newMessage.Content);
-
-                    // Users that we've found by comparing the old and new lists.
-                    var newlyFoundUserIds = new List<ulong>();
-
-                    for (int i = 0; i < mentionUsers_new.Count; i++)
+                    foreach (var user in GetMessageMentions(e.Message.Content))
                     {
-                        var user = mentionUsers_new[i];
+                        try
+                        {
+                            var member = await e.Guild.GetMemberAsync(user);
 
-                        if (!mentionUsers_old.Contains(user))
-                        {   // If the old list doesn't contain it, this means it's a new mention.
+                            var userPerms = new UserPermissions(member.Roles);
 
-                            newlyFoundUserIds.Add(user);
+                            if (!userPerms.IsRoleOrHigher(Role.CS) && !member.IsBot)
+                            {   // Only add this person if they're not CS or higher AND not a bot.
+
+                                mentionedColonistIds.Add(member.Id);
+                            } // end if
                         }
-                    }
+                        catch
+                        {   // Most likely they're not in the guild if an exception is thrown, so let's just add their id to the list anyway.
+                            mentionedColonistIds.Add(user);
+                        }
+                    } // end foreach
 
-                    if (newlyFoundUserIds.Count > 0)
-                    {   // We only want to start formatting a message and sending it if there's actually users to look at.
+                    // ----
+                    // Great, now we have all our mentioned colonists. Let's just make sure there's no duplicates.
+                    mentionedColonistIds = mentionedColonistIds.Distinct().ToList();
+
+                    if (mentionedColonistIds.Count > 0)
+                    {   // Only continue if there's actually mentioned colonists.
 
                         var actionChannel = e.Channel;
 
                         // Create a dictionary based on a DiscordMember and all of the messages mentioning him or her.
                         Dictionary<ulong, List<DiscordMessage>> warnDict =
-                            await QueryMemberMentions(newlyFoundUserIds, actionChannel, Program.Settings.MaxActionAgeMonths, e.Message);
+                            await QueryMemberMentions(mentionedColonistIds, actionChannel, Program.Settings.MaxActionAgeMonths, e.Message);
+
+                        // ----
+                        // So at this point, we know there's at least one person who has been warned (0,inf) times.
+                        // Let's notify the action channel.
 
                         await NotifyActionLogsMentionsFound(warnDict, actionChannel);
                     } // end if
                 } // end if
-            } // end if
+
+            });
+
+        } // end method
+
+        internal static async Task BotClientMessageUpdated(DiscordClient botClient, MessageUpdateEventArgs e)
+        {
+            _ = Task.Run(async () =>
+           {
+               if (Program.Settings.AutoWarnSnoopEnabled &&
+                    !e.Author.IsCurrent &&
+                    e.Channel.Id == Program.Settings.ActionChannelId)
+               {   // We only want to continue through here if warn snooping is enabled, the bot isn't self-triggering, and we're in #action-logs.
+
+                    // Do not used cache messages in case something changed. Let's get messages directly from the server.
+                    var oldMessage = e.MessageBefore;
+                   var newMessage = e.Message;
+
+                    // If either of the messages aren't cached, we should just stop right here. We can't tell if any new mentions were added, so we'll
+                    // end up causing more spam therefore more harm. It's unfortunate because we should always try to find some way to interact with
+                    // some kind of data, but this is a hard limitation I've ran into.
+
+                    if (!(oldMessage is null) && !(newMessage is null))
+                   {   // Only continue if neither message is null.
+                        var mentionUsers_old = GetMessageMentions(oldMessage.Content);
+                       var mentionUsers_new = GetMessageMentions(newMessage.Content);
+
+                        // Users that we've found by comparing the old and new lists.
+                        var newlyFoundUserIds = new List<ulong>();
+
+                       for (int i = 0; i < mentionUsers_new.Count; i++)
+                       {
+                           var user = mentionUsers_new[i];
+
+                           if (!mentionUsers_old.Contains(user))
+                           {   // If the old list doesn't contain it, this means it's a new mention.
+
+                                newlyFoundUserIds.Add(user);
+                           }
+                       }
+
+                       if (newlyFoundUserIds.Count > 0)
+                       {   // We only want to start formatting a message and sending it if there's actually users to look at.
+
+                            var actionChannel = e.Channel;
+
+                            // Create a dictionary based on a DiscordMember and all of the messages mentioning him or her.
+                            Dictionary<ulong, List<DiscordMessage>> warnDict =
+                                await QueryMemberMentions(newlyFoundUserIds, actionChannel, Program.Settings.MaxActionAgeMonths, e.Message);
+
+                           await NotifyActionLogsMentionsFound(warnDict, actionChannel);
+                       } // end if
+                    } // end if
+                } // end if
+            });
         }
 
         static async Task NotifyActionLogsMentionsFound(Dictionary<ulong, List<DiscordMessage>> warnDict, DiscordChannel channel)
