@@ -46,8 +46,8 @@ namespace BigSister.Mutes
         const string QQ_UserMuteExists = @"SELECT EXISTS(SELECT 1 FROM `Mutes` WHERE `UserId`=$userid and `Guild` =$guild);";
         /// <summary>Query to remove mutes for a given user</summary>
         const string QQ_UserRemoveMute = @"DELETE FROM `Mutes` WHERE `UserId`=$userid and `Guild` =$guild;";
-        /// <summary>Query to check if a mute exists.</summary>
-
+        /// <summary>Query to check mute duration for a user. There should only be one mute
+        const string QQ_GetUserMute = @"SELECT `Id`, `UserId`, `Message`, `TriggerTime`, `Guild` FROM `Mutes` WHERE `UserId`=$userid and `Guild` =$guild;";
 
         #region MuteCommands.cs
 
@@ -187,6 +187,8 @@ namespace BigSister.Mutes
             {   // Everything is good in the world... except that the world is burning, but that's not something we're worried about here, for
                 // now...
 
+                //some flags to manage mute duration
+                bool noTrack = false; //for when an existing mute is longer
 
                 //this is really just here so the error embed bit doesn't yell at me
                 embed = Generics.GenericEmbedTemplate(
@@ -206,59 +208,119 @@ namespace BigSister.Mutes
                     guild: ctx.Guild.Id
                     );
 
-                //don't need these either
-                /*
-                embed.AddField(@"User", ctx.Message.MentionedUsers[0].Mention, true);
-                embed.AddField(@"Time (UTC)", dto.ToString(Generics.DateFormat), true);
-                embed.AddField(@"Remaining time", Generics.GetRemainingTime(dto), true);
-                embed.AddField(@"Notification Identifier", mute.OriginalMessageId.ToString(), false);
-                */
-
-                // add muted role to listed user
+                // add muted role to listed user, won't break anything if it's already there
                 DiscordMember member = await ctx.Guild.GetMemberAsync(mute.User);
-                DiscordRole role = ctx.Guild.GetRole(Program.Settings.MuteRoleID[mute.Guild]); 
+                DiscordRole role = ctx.Guild.GetRole(Program.Settings.MuteRoleID[mute.Guild]);
                 await member.GrantRoleAsync(role);
 
+                //Lets check if there's a longer mute or not first
+                Mute old_mute;
+                string note = "";
+
                 // Let's build the command.
-                using var command = new SqliteCommand(BotDatabase.Instance.DataSource)
+                using var check_command = new SqliteCommand(BotDatabase.Instance.DataSource)
                 {
-                    CommandText = QQ_AddMute
+                    CommandText = QQ_GetUserMute
                 };
 
-                SqliteParameter a = new SqliteParameter("$id", mute.OriginalMessageId.ToString())
+                SqliteParameter aa = new SqliteParameter("$userid", targetUser.Id)
+                {
+                    DbType = DbType.String
+                };
+                SqliteParameter bb = new SqliteParameter("$guild", ctx.Guild.Id)
                 {
                     DbType = DbType.String
                 };
 
-                SqliteParameter b = new SqliteParameter("$userid", mute.User)
+                check_command.Parameters.AddRange(new SqliteParameter[] { aa, bb });
+
+                // Get a single item from the list.
+                // We're using a delegate that supposedly returns a list of mutes, but in this case it should only return one.
+                old_mute = ((Mute[])await BotDatabase.Instance.ExecuteReaderAsync(check_command,
+                        processAction: readMutes)).SingleOrDefault();
+
+                // Check if it's default aka nothing found (for some reason)
+                if (!old_mute.Equals(default(Mute)))
                 {
-                    DbType = DbType.String
-                };
+                    //if we're here, there's an old mute
+                    if (old_mute.Time >= mute.Time) //existing mute is longer, don't track new in DB
+                    {
+                        noTrack = true;
+                        note = "\nNote: Overriden by longer mute";
+                    }
+                    else //existing mute is shorter, we're overriding it, aka deleting any pre-existing ones
+                    {
+                        // Let's build the command.
+                        using var remove_command = new SqliteCommand(BotDatabase.Instance.DataSource)
+                        {
+                            CommandText = QQ_UserRemoveMute
+                        };
 
-                SqliteParameter c = new SqliteParameter("$message", mute.Text)
-                {
-                    DbType = DbType.String
-                };
+                        SqliteParameter aaa = new SqliteParameter("$userid", targetUser.Id)
+                        {
+                            DbType = DbType.String
+                        };
+                        SqliteParameter bbb = new SqliteParameter("$guild", ctx.Guild.Id)
+                        {
+                            DbType = DbType.String
+                        };
 
-                SqliteParameter d = new SqliteParameter("$time", mute.Time)
-                {
-                    DbType = DbType.Int32
-                };
-                SqliteParameter e = new SqliteParameter("guild", mute.Guild)
-                {
-                    DbType = DbType.String
-                };
+                        remove_command.Parameters.AddRange(new SqliteParameter[] { aaa, bbb });
+
+                        // and run it
+                        await BotDatabase.Instance.ExecuteNonQuery(remove_command);
+                        note = "\nNote: Extending shorter mute";
+                    }
+                }
 
 
-                command.Parameters.AddRange(new SqliteParameter[] { a, b, c, d, e});
 
-                await BotDatabase.Instance.ExecuteNonQuery(command);
+
+                if (!noTrack) { 
+
+                    // Let's build the command.
+                    using var command = new SqliteCommand(BotDatabase.Instance.DataSource)
+                    {
+                        CommandText = QQ_AddMute
+                    };
+
+                    SqliteParameter a = new SqliteParameter("$id", mute.OriginalMessageId.ToString())
+                    {
+                        DbType = DbType.String
+                    };
+
+                    SqliteParameter b = new SqliteParameter("$userid", mute.User)
+                    {
+                        DbType = DbType.String
+                    };
+
+                    SqliteParameter c = new SqliteParameter("$message", mute.Text)
+                    {
+                        DbType = DbType.String
+                    };
+
+                    SqliteParameter d = new SqliteParameter("$time", mute.Time)
+                    {
+                        DbType = DbType.Int32
+                    };
+                    SqliteParameter e = new SqliteParameter("guild", mute.Guild)
+                    {
+                        DbType = DbType.String
+                    };
+
+
+                    command.Parameters.AddRange(new SqliteParameter[] { a, b, c, d, e });
+
+                    await BotDatabase.Instance.ExecuteNonQuery(command);
+                }
                 // Send the response.
 
                 //redirect to action channel
                 DiscordChannel sendChannel = await Program.BotClient.GetChannelAsync(Program.Settings.ActionChannelId);
                 //make a message to report the action
-                await sendChannel.SendMessageAsync(content: $"**Muted User**: {Generics.GetMention(mute.User)}\nStaff: {Generics.GetMention(ctx.User.Id)}\nRemaining time: {Generics.GetRemainingTime(dto)}\nReason: {mute.Text}");
+
+                await sendChannel.SendMessageAsync(content: $"**Muted User**: {Generics.GetMention(mute.User)}\nStaff: {Generics.GetMention(ctx.User.Id)}\nRemaining time: {Generics.GetRemainingTime(dto)}\nReason: {mute.Text}"+note);
+                
 
                 //await sendChannel.SendMessageAsync(embed: embed); //formerly sending as an embed
             }
@@ -561,7 +623,7 @@ namespace BigSister.Mutes
                     //   ( |     /     /
                     //    " \_  (__   (__        [nabis]
                     //        "-._,)--._,)
-                    //  o < bunny poopy l0l
+                    // 
                     // ------------------------------------------------
                     // This ASCII pic can be found at
                     // https://asciiart.website/index.php?art=animals/rabbits
