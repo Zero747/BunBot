@@ -31,7 +31,7 @@ namespace BigSister.Filter
             if(!Program.Settings.ExcludedChannels.Contains(e.Channel.Id) && 
                !e.Channel.IsPrivate &&
                !e.Author.IsCurrent &&
-                e.Message.MessageType == MessageType.Default)
+                (e.Message.MessageType == MessageType.Default || e.Message.MessageType == MessageType.Reply))
             {
                 //CheckMessage(e.Message);
                 _ = Task.Run(() => CheckMessage(e.Message)).ConfigureAwait(false);
@@ -44,7 +44,7 @@ namespace BigSister.Filter
             if (!Program.Settings.ExcludedChannels.Contains(e.Channel.Id) &&
                !e.Channel.IsPrivate &&
                !e.Author.IsCurrent &&
-                e.Message.MessageType == MessageType.Default)
+                (e.Message.MessageType == MessageType.Default || e.Message.MessageType == MessageType.Reply))
             {
                 _ = Task.Run(() => CheckMessage(e.Message)).ConfigureAwait(false);
             }
