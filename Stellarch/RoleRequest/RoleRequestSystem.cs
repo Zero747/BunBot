@@ -256,13 +256,9 @@ namespace BigSister.RoleRequest
             }
 
             var callingMember = await guild.GetMemberAsync(user.Id);
-
+            var userPerms = new UserPermissions(callingMember.Roles);
             // Make sure the person is a colonist and not muted
-            if (await Permissions.HandlePermissionsCheck(
-                member: callingMember,
-                chan: channel,
-                minRole: MinRoleColonist,
-                shouldRespondToRejection: false) &&
+            if ( (!userPerms.Muted) &&
                 (!user.IsBot) )
             {
                 // Check the database for exactly what role we're giving or removing from them.

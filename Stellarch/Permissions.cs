@@ -144,7 +144,7 @@ namespace BigSister
                 switch (role.Id)
                 {
                     // ----------------------------------------------
-                    case 793897526377840660: // Rimworld Colonist  
+                    case 934494665539993611: // Rimworld Colonist  
                     case 841237358527250433: // Dev Server Colonist
 
                         role_returnVal |= Role.Colonist;
