@@ -14,6 +14,7 @@ using BigSister.Commands;
 using DSharpPlus.Entities;
 using System.Text;
 using BigSister.ChatObjects;
+using BigSister.Welcome;
 
 namespace BigSister
 {
@@ -77,6 +78,11 @@ namespace BigSister
             // Mute 
             botClient.GuildMemberAdded += MuteSystem.CheckMuteEvade;
             muteTimer.Elapsed += MuteSystem.MuteTimer_Elapsed;
+
+            // ----------------
+            // Welcome
+            botClient.GuildMemberAdded += WelcomeSystem.DoWelcomeMessage;
+            botClient.GuildMemberRemoved += WelcomeSystem.DoLeaveMessage;
 
             // ----------------
             // Reminder timer

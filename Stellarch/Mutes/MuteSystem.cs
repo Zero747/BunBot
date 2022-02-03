@@ -641,7 +641,7 @@ namespace BigSister.Mutes
                             mention: ctx.User.Mention,
                             body: $"Hello {ctx.Member.Mention}, please note you are the only one who can react to this message.\n\n" +
                             $"**Showing {count} mutes out of a total of {mutes.Length}.**"));
-                        deb.WithTitle($"Mutess Page {curPage}/{Math.Ceiling((float)mutes.Length / (float)MUTES_PER_PAGE)}");
+                        deb.WithTitle($"Mutes Page {curPage}/{Math.Ceiling((float)mutes.Length / (float)MUTES_PER_PAGE)}");
                         deb.WithColor(Generics.NeutralColor);
                         deb.WithThumbnail(Generics.URL_MUTE_GENERIC);
 

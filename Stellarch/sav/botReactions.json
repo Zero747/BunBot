@@ -25,6 +25,11 @@
     "Cooldown": 900000
   },
   {
+    "RegexString": "^(Thanks|ty) Floppy?$",
+    "Response": ":RWbunHug:",
+    "Cooldown": 90000
+  },
+  {
     "RegexString": "🥕",
     "Response": "...Can I have that carrot...?",
     "Cooldown": 1800000,
@@ -45,7 +50,7 @@
   {
     "RegexString": "^!vore$",
     "Response": "https://i.imgur.com/yrs10DR.png",
-    "Cooldown": 43200000
+    "Cooldown": 900000
   },
   {
     "RegexString": "^!lizard$",
