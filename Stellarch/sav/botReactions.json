@@ -26,7 +26,7 @@
   },
   {
     "RegexString": "^(Thanks|ty) Floppy?$",
-    "Response": ":RWbunHug:",
+    "Response": "<a:RWbunHug:879999766774308874>",
     "Cooldown": 90000
   },
   {
@@ -49,8 +49,8 @@
   },
   {
     "RegexString": "^!vore$",
-    "Response": "https://i.imgur.com/yrs10DR.png",
-    "Cooldown": 900000
+    "Response": "Stop it with the weird shit",
+    "Cooldown": 90000
   },
   {
     "RegexString": "^!lizard$",
