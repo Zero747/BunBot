@@ -5,12 +5,12 @@
     "Cooldown": 900000
   },
   {
-    "RegexString": "^(?:I'm|I am) a bunny[.!?]?$",
+    "RegexString": "^(?:I['‘’]m|I am) a bunny[.!?]?$",
     "Response": "Me too!",
     "Cooldown": 900000
   },
   {
-    "RegexString": "^Floppy,? (?:you're|you are) (?:cute|adorable|pretty|beautiful)[.!?]?$",
+    "RegexString": "^Floppy,? (?:you['‘’]re|you are) (?:cute|adorable|pretty|beautiful)[.!?]?$",
     "Response": "Um.......................yeathanks https://i.imgur.com/nmtZMc7.png",
     "Cooldown": 900000
   },
@@ -20,7 +20,7 @@
     "Cooldown": 900000
   },
   {
-    "RegexString": "^Floppy,? (?:we're|we are) being raided[.!?]?$",
+    "RegexString": "^Floppy,? (?:we['‘’]re|we are) being raided[.!?]?$",
     "Response": "Target practice! https://i.imgur.com/s3RED4H.png",
     "Cooldown": 900000
   },
