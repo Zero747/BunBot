@@ -50,7 +50,7 @@
   {
     "RegexString": "^!vore$",
     "Response": "Stop it with the weird shit",
-    "Cooldown": 0
+    "Cooldown": 900000
   },
   {
     "RegexString": "^!lizard$",
@@ -60,6 +60,11 @@
   {
     "RegexString": "^!freespeech$",
     "Response": "https://imgs.xkcd.com/comics/free_speech.png",
+    "Cooldown": 900000
+  },
+  {
+    "RegexString": "^(goddamnit|gdi|damnit|damn it) floppy$",
+    "Response": "Fuck you too",
     "Cooldown": 900000
   }
 ]
