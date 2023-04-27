@@ -35,6 +35,7 @@ namespace BigSister.Settings
         public int MaxMuteTimeDays = 7;
         public Dictionary<ulong, ulong> MuteRoleID = new Dictionary<ulong, ulong>(){
             {564290157524680716, 778929358491353138}, //dev server
+            {1101221874672869538, 1101221874727399473}, //new dev server
             {214523379766525963, 793897525509095477} //rimworld discord
             };
         // ----------------

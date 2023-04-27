@@ -246,7 +246,7 @@ namespace BigSister.Mutes
                     if (old_mute.Time >= mute.Time) //existing mute is longer, don't track new in DB
                     {
                         noTrack = true;
-                        note = "\nNote: Overriden by longer mute";
+                        note = "\nNote: Overridden by longer mute";
                     }
                     else //existing mute is shorter, we're overriding it, aka deleting any pre-existing ones
                     {

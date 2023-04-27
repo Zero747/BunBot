@@ -146,6 +146,7 @@ namespace BigSister
                     // ----------------------------------------------
                     case 934494665539993611: // Rimworld Colonist  
                     case 841237358527250433: // Dev Server Colonist
+                    case 1101221874672869539: // New Dev Server Colonist
 
                         role_returnVal |= Role.Colonist;
                         break;
@@ -179,18 +180,21 @@ namespace BigSister
                     // ----------------------------------------------
                     case 503752769757511690: // Rimworld Bot Manager
                     case 673765760656605194: // Dev Server Bot Manager
+                    case 1101221874735783979: // New Dev Server Bot Manager
 
                         role_returnVal |= Role.BotManager;
                         break;
                     // ----------------------------------------------
                     case 214524811433607168: // Rimworld Admin 
                     case 564292110182776843: // Dev Server Admin
+                    case 1101221874735783984: // New Dev Server Admin
 
                         role_returnVal |= Role.Admin;
                         break;
                     // ----------------------------------------------
                     case 793897525509095477: // Rimworld Muted
                     case 778929358491353138: // Dev Server Muted
+                    case 1101221874727399473: // New Dev Server Muted
 
                         muted = true;
                         break;

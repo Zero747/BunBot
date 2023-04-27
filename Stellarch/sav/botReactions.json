@@ -1,7 +1,7 @@
 [
   {
     "RegexString": "^(\\*|_)hugs <@!?816655819134599179>(\\*|_)$",
-    "Response": "*cuddles with {0}.*",
+    "Response": "*hugs {0}.*",
     "Cooldown": 900000
   },
   {
@@ -50,7 +50,7 @@
   {
     "RegexString": "^!vore$",
     "Response": "Stop it with the weird shit",
-    "Cooldown": 90000
+    "Cooldown": 0
   },
   {
     "RegexString": "^!lizard$",

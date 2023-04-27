@@ -85,6 +85,11 @@ namespace BigSister
             botClient.GuildMemberRemoved += WelcomeSystem.DoLeaveMessage;
 
             // ----------------
+            // Admit
+            botClient.MessageCreated += Admission.Admission.BotClient_MessageCreated;
+
+
+            // ----------------
             // Reminder timer
             reminderTimer.Elapsed += ReminderSystem.ReminderTimer_Elapsed;
 

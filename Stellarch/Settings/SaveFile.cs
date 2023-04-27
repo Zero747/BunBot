@@ -4,6 +4,7 @@
 // loaded. If both files are corrupt, the program throws an exception.
 //
 
+// TODO: get rid of the md5 junk
 
 using System;
 using System.IO;
@@ -231,74 +232,6 @@ namespace BigSister.Settings
                 throw new SaveFileException("Save files could not load: Not found.");
             }
 
-            #region ... bunny?!?!
-
-            /*
-                  `sdmdhs/`                                   `:oyhhs/`                             
-                 `smmmmmmmds-                              :ohdmmmmmmms                             
-                 -mmhhdmmmmmdh/                         .+hmmmmmmy+/dmh                             
-                 -dm-`.:odmmmdyy-                     `shdmmmmdy:`  /dh                             
-                 .dh     .ydy+/oyh+`                 /ds//sdms.     `do                             
-                 .dy      `-sho///sho.            `:yh+//ohy:`      .d+                             
-                 `hd`       `-hy////ohs-.------..ohs+///sdo`        .do                             
-                  om/         :hhyhhhddhhysssssyyyhhyhhydo.         :d/                             
-                  -d/     `-+yhhyo+///////////////////+oyhdy:      `yh`                             
-                   yh  `-+hhyo////////////////////////////+ydy-    +m/                              
-     `-/+o++:`     +d//ydso//////////////////////////////////yd+. `hh`    ./syyyo:                  
-    :hdddyyyyho-   `hddh+///////////////////////://///////////ohd//m/  ./ydddhddmd+                 
-    `dmy:.....-+hy- `hds//+oo++//////+ss//////////+s+//////+++o+/sddy`:shyo:-.../hmd:                
-    -my.`........+hosd+//+ysssyyyyyyyys+///:///////oyyyyyyyysssso/ymsydo-.......`:dmo                
-    -ds`.-:::::-..-ymy/////////////////////////////////////////////hds-..-::::::.`omo                
-    yh.-::::::::-..odho//////////////////////////////////////////yd+..-:::::::::.om:                
-    -m+.::::::::::..-ydy+oo++oooooooss/////////:/+yssooooooooooohh/..-:::::::::-.yd.                
-     sd:-::::::::::-`.+hd+/++////:::---://///////-.-:::///////ydy-..:::::::::::.omo                 
-     .hh::::::::::::-..-yh-     `..`   ://///////`   ``      +ds...:::::::::::.:ds`                 
-      .yh--::::::::::-.`.yd:   +hddh:`://////////:.-yhhs`   od+..-:::::::::::./d+`                  
-       .sh:-:::::::::::.`.sh:..dmmmmdyy//////////shhmmmm/  +d+..-::::::::::-./h+                    
-        `oh+.:::::::::::.`.sdhshhhyso/////////////+osyhdysyd+.`-::::::::::-.+h/                     
-          :ys--:::::::::-``.sd+//////////+++++///////////odo.`.:::::::::-.:yy-                      
-           `+h+-:::::::::-.`.yh///:///+hdddddddhs///////+ds.`.:::::::::--oh+`                       
-             -yy/-::::::::-.`-ds-:////smmmmmmmmmd+///:--hy.`.::::::::-:oho.                         
-              `/hs:-:::::::.``+d:`.-::/ymmmmmmmdy/:-.``sd:``-:::::::-oho-                           
-                .oho--:::::-`..hy`  ```.:shmdhs/.``   :d+``.:::::-./yy-                             
-                  -oys:--:::..`:ho-.s/-``./dy/-``.:o-.hh.`.-:::-.:oh/`                              
-                `+- -+y+..-..``.-+yo/+ooooo::+ooooo+osy:```.-..`+ys- ./`                            
-                `/s-+ossoso+ooo++oydyso+/:--:::/+ossdhsoooooooooyso/.s+`                            
-               :s/.s: `.....-hmmmmmd+.-:/++o+///:--odmmmmms......```+:/o/                           
-                -/.ys`       :yddhy/d:```````````.hs:yhdhs.        +d::.`                           
-               .+y:.sy-`      `...``:-```````````./` `...      `.:sy:/o-                            
-              -hh:```/sso+/::---:+s/````````````````.o+//://++osso:.`.od/                           
-              yd:``````.--://+++/:.`````.oo+++o:`````.-:://::-..``````.hd-                          
-              dy```````````````````      .-hs-.`       ````````````````ym/                          
-              od/````````````````     ..```yh..-:.`/+`  ``````````````/dy`                          
-              `sd+.``````````````    /sooos+/os+/ssd:    ```````````-ohs`                           
-               `/sys+:-...```.```    `   ``       .y/   ``````..-:+syo-                             
-                  `-/hdhyyssyysoo:.`               .../+sssssyyydh/-`                               
-                     oms///+++++mhyss++++////+oooosyyyymy+++++++do                                  
-                     :ddyyo/////ds-:sdooyddshdso+sdy:.:ms:///oyyds`                                 
-                    .do:-+dy////sd-..+yyy/-.-+syyy/...od+/:/ds-`.hs                                 
-                    `ho:.:dd/////do....-.......--....-dy////hy:`-h+                                 
-                     /mhydy+///+ohd-.................sm+/////sdyhd-                                 
-                     yh:/dh/+shdmmmhs+:..........-/oydmhy+///hh//d/                                 
-                    .do--odddmmmmmmmmmds.......-sdmmmmmmmmhshh/--hho:`                              
-                    +mo::-/ydmmmmmmmmmmd-......ommmmmmmmmmmmy:---ydoyho:-`                          
-                    sdhhysosdmmmmmmdyys/../yy:.-+sshmmmmmmmd++++ohd//+syyyo.                        
-                   .ds-://++odmmmmmy-...-+dyhh:----+mmmmmmhyysso+ydo//////sd+:.`                    
-                   +d:------:ddhddhhyyyyydy//yhhyyhhhdddhms------+mh///////+oydyso/::..````         
-                   od:------+mo/+////////+osoo+//////++//hy------+mh////////:///+oshdddddhho:`      
-                   /m+------/do////////ohho::+yy+////////hs------+mh/////////////////ymmmmmmmds.    
-                   `hh/-----:dy///////sd/`     /do//////+do------yms////////////////:smmmmmmmmmd/   
-                    -dd+-----hd//////od/        sh//////sd/-----/dy///////://////////+mmmmmmmmmmd/  
-                     -hd/----/ds/////hd`        /m+/////ds-----+dd+//////////////////smmmmmmmmmmmh` 
-                     `/ddysosoddo////hs         :m+////ydsooossdosyhy+//////////////ymmmmmmmmmmmd/` 
-                   .sdmmmmmmmmmmdhhhhdh:        +dyysyhmmmmmmmmmmhs//yhysoo+///////+dmmmmmmmmmdy.   
-          ``..----/dmmmmmmmmmmdo::::::om//////:od+//:::+ymmmmmmmmmmmy//oossddhhysyydmmmmmmmmmdh     
-         `ydhhdddddddddddddddddddddddddddddddddmdddddddddddmdmdmmmmmmdmmddddddddddyyyyyyyso+:-`     
-                      `..........................-----..........-----.--....``                      
-
-             */
-
-            #endregion ....andfox?!?!?!
 
             // If both files exists, we need to see which is the oldest and newest.
             if (bfAExists && bfBExists)
@@ -336,90 +269,8 @@ namespace BigSister.Settings
             // Great. Now we have our newest file and oldest file with String.Empty as a sentinel value indicating it couldn't be found for some
             // reason. Hopefully it was found.
 
-            // Now we need to get the MD5 file directories. If the file path does NOT equal String.Empty, we get the MD5 file, otherwise String.Empty
-            string newestFileMD5 = !newestFile.Equals(String.Empty) ?
-                                   GetMD5File(newestFile) :
-                                   String.Empty;
-            string oldestFileMD5 = !oldestFile.Equals(String.Empty) ?
-                                   GetMD5File(oldestFile) :
-                                   String.Empty;
 
-            // Let's check if they exist really fast.
-            bool newestFileMD5Exists = File.Exists(newestFileMD5);
-            bool oldestFileMD5Exists = File.Exists(oldestFileMD5);
-            bool newFileExists = !newestFile.Equals(String.Empty);
-            bool oldFileExists = !oldestFile.Equals(String.Empty);
-
-            string newFileTrueMD5; // True meaning this is the MD5 found in the .MD5 file, and this is what we want the MD5 to be.
-            string oldFileTrueMD5;
-            string newFileMD5;
-            string oldFileMD5;
-            bool newFileIntegrity;
-            bool oldFileIntegrity;
-
-            // Let's try load the MD5s of the newer files.
-            if (newFileExists && newestFileMD5Exists)
-            {
-                newFileTrueMD5 = ReadFile(newestFileMD5);
-                newFileMD5 = GetFileMD5(newestFile);
-                newFileIntegrity = CompareMD5(newFileTrueMD5, newFileMD5) && IsValidJson(newestFile);
-            }
-#pragma warning disable IDE0059
-            else
-            {
-                newFileTrueMD5 = String.Empty;
-                newFileMD5 = String.Empty;
-                newFileIntegrity = false;
-            }
-#pragma warning restore IDE0059 
-
-            // Let's try load the MD5s of the older files.
-            if (oldFileExists && oldestFileMD5Exists)
-            {
-                oldFileTrueMD5 = ReadFile(oldestFileMD5);
-                oldFileMD5 = GetFileMD5(oldestFile);
-                oldFileIntegrity = CompareMD5(oldFileTrueMD5, oldFileMD5) && IsValidJson(oldestFile);
-            }
-#pragma warning disable IDE0059
-            else
-            {
-                oldFileTrueMD5 = String.Empty;
-                oldFileMD5 = String.Empty;
-                oldFileIntegrity = false;
-            }
-#pragma warning restore IDE0059 
-
-            // Great. Now we have all the MD5s, so we need to compare them and see what's up.
-
-
-            bool newFileExisting = newFileExists && newestFileMD5Exists;
-            bool oldFileExisting = oldFileExists && oldestFileMD5Exists;
-            // If this scope is entered, great! All files exist and have integrity.
-            if ((newFileExisting && oldFileExisting) &&
-               (newFileIntegrity && oldFileIntegrity))
-            {
-                returnVal = newestFile;
-            }
-            else // Uh oh, something fucked up.
-            {
-                // If this scope is entered, the newest file has the most integrity
-                if (newFileExisting && newFileIntegrity)
-                {
-                    returnVal = newestFile;
-                }
-                // If this scope is entered, the oldest file has the most integrity
-                else if (oldFileExisting & oldFileIntegrity)
-                {
-                    returnVal = oldestFile;
-                }
-                // If this scope is entered, everything is fucked.
-                else
-                {
-                    throw new SaveFileException("Save files corrupt.");
-                } // end else
-            } // end else
-
-            return returnVal;
+            return newestFile;
         }
 
         /// <summary>Get MD5 file string from FileBase.</summary>

@@ -71,8 +71,8 @@ namespace BigSister.Commands
                     await GenericResponses.SendGenericCommandError(
                             ctx.Channel,
                             ctx.Member.Mention,
-                            "Unable to remove reminder",
-                            $"The reminder id `{args}` does not exist...");
+                            "Unable to remove mute",
+                            $"The mute id `{args}` does not exist...");
                 }
             }
         }
