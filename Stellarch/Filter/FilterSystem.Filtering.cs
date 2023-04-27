@@ -39,12 +39,12 @@ namespace BigSister.Filter
         }
         internal static async Task BotClient_MessageUpdated(DiscordClient botClient, MessageUpdateEventArgs e)
         {
-            // Only continue if the channel isn't excluded, if the sender isn't the bot, if this isn't sent in PMs, and if this isn't due to a
+            // Only continue if the channel isn't excluded, if the sender isn't the bot, if this isn't sent in PMs, if this wasn't due to an embed, and if this isn't due to a
             // system messages e.g. message pinned, member joins, 
             if (!Program.Settings.ExcludedChannels.Contains(e.Channel.Id) &&
                !e.Channel.IsPrivate &&
                !e.Author.IsCurrent &&
-                (e.Message.MessageType == MessageType.Default || e.Message.MessageType == MessageType.Reply))
+                (e.Message.MessageType == MessageType.Default || e.Message.MessageType == MessageType.Reply) && (e.MessageBefore.Content != e.Message.Content))
             {
                 _ = Task.Run(() => CheckMessage(e.Message)).ConfigureAwait(false);
             }
