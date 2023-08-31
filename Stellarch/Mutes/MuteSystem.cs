@@ -21,6 +21,7 @@ using BigSister.ChatObjects;
 using BigSister.Database;
 using System.Runtime.InteropServices.ComTypes;
 using DSharpPlus.Interactivity.Extensions;
+using DSharpPlus.Net.Models;
 
 namespace BigSister.Mutes
 {
@@ -212,6 +213,10 @@ namespace BigSister.Mutes
                 DiscordMember member = await ctx.Guild.GetMemberAsync(mute.User);
                 DiscordRole role = ctx.Guild.GetRole(Program.Settings.MuteRoleID[mute.Guild]);
                 await member.GrantRoleAsync(role);
+                await member.ModifyAsync(delegate (MemberEditModel user)
+                {
+                    user.VoiceChannel = null;
+                });
 
                 //Lets check if there's a longer mute or not first
                 Mute old_mute;
