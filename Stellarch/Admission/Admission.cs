@@ -24,31 +24,25 @@ namespace BigSister.Admission
                 return;
             }
 
-            bool usernameBad = false;
-            bool messageBad = false;
 
             //filter message
-
-            var badWords = GetBadWords(e.Author.Username, out string notatedMessage); // The detected bad words.
-            usernameBad = badWords.Count > 0;
-            badWords = GetBadWords(e.Message.Content, out notatedMessage);
-            messageBad = badWords.Count > 0;
+            var user = await e.Guild.GetMemberAsync(e.Author.Id, true);
+            bool contentBad = GetBadWords(user.DisplayName + "\n" + e.Message.Content, out string notatedMessage).Count > 0; // The detected bad words.
 
             //generate message
 
-            if(usernameBad || messageBad)
+            if(contentBad)
             {
-                string message = "{0} your username or message is in violation of the rules, please message a member of staff for assistance";
+                string message = "{0} your display name or message is in violation of the rules, please message a member of staff for assistance";
                 await e.Channel.SendMessageAsync(content: String.Format(message, arg0: e.Author.Mention));
             }
             else //assign role
             {
-                var callingMember = await e.Guild.GetMemberAsync(e.Author.Id);
                 DiscordRole colonistRole = e.Guild.GetRole(934494665539993611);
                 //only do if not colonist
-                if (!callingMember.Roles.Contains(colonistRole))
+                if (!user.Roles.Contains(colonistRole))
                 {
-                    await callingMember.GrantRoleAsync(colonistRole);
+                    await user.GrantRoleAsync(colonistRole);
                     await e.Message.CreateReactionAsync(DiscordEmoji.FromUnicode("✅"));
                 }
                 

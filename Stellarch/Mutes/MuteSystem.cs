@@ -247,35 +247,29 @@ namespace BigSister.Mutes
                 // Check if it's default aka nothing found (for some reason)
                 if (!old_mute.Equals(default(Mute)))
                 {
-                    //if we're here, there's an old mute
-                    if (old_mute.Time >= mute.Time) //existing mute is longer, don't track new in DB
+                    // If we're here, there's an old mute
+                    // We're overriding it, aka deleting any pre-existing ones
+                    // Let's build the command.
+                    using var remove_command = new SqliteCommand(BotDatabase.Instance.DataSource)
                     {
-                        noTrack = true;
-                        note = "\nNote: Overridden by longer mute";
-                    }
-                    else //existing mute is shorter, we're overriding it, aka deleting any pre-existing ones
+                        CommandText = QQ_UserRemoveMute
+                    };
+
+                    SqliteParameter aaa = new SqliteParameter("$userid", targetUser.Id)
                     {
-                        // Let's build the command.
-                        using var remove_command = new SqliteCommand(BotDatabase.Instance.DataSource)
-                        {
-                            CommandText = QQ_UserRemoveMute
-                        };
+                        DbType = DbType.String
+                    };
+                    SqliteParameter bbb = new SqliteParameter("$guild", ctx.Guild.Id)
+                    {
+                        DbType = DbType.String
+                    };
 
-                        SqliteParameter aaa = new SqliteParameter("$userid", targetUser.Id)
-                        {
-                            DbType = DbType.String
-                        };
-                        SqliteParameter bbb = new SqliteParameter("$guild", ctx.Guild.Id)
-                        {
-                            DbType = DbType.String
-                        };
+                    remove_command.Parameters.AddRange(new SqliteParameter[] { aaa, bbb });
 
-                        remove_command.Parameters.AddRange(new SqliteParameter[] { aaa, bbb });
+                    // and run it
+                    await BotDatabase.Instance.ExecuteNonQuery(remove_command);
+                    note = "\nNote: Overriding previous mute";
 
-                        // and run it
-                        await BotDatabase.Instance.ExecuteNonQuery(remove_command);
-                        note = "\nNote: Extending shorter mute";
-                    }
                 }
 
 
