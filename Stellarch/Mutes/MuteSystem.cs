@@ -770,15 +770,14 @@ namespace BigSister.Mutes
                             /*2*/ lateBy.Minutes,
                             /*3*/ lateBy.Seconds));
 
-
-                    DiscordGuild guild = await Program.BotClient.GetGuildAsync(mute.Guild);
-                    if (guild.Members.ContainsKey(mute.User))
+                    try
                     {
+                        DiscordGuild guild = await Program.BotClient.GetGuildAsync(mute.Guild);
                         DiscordMember member = await guild.GetMemberAsync(mute.User);
                         DiscordRole role = guild.GetRole(Program.Settings.MuteRoleID[mute.Guild]);
                         await member.RevokeRoleAsync(role);
                     }
-                    else
+                    catch(Exception e)
                     {
                         deb.AddField("Note", value: "User has left the server");
                     }
