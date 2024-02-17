@@ -21,6 +21,7 @@ using BigSister.ChatObjects;
 using BigSister.Database;
 using System.Runtime.InteropServices.ComTypes;
 using DSharpPlus.Interactivity.Extensions;
+using DSharpPlus.Net.Models;
 
 namespace BigSister.Mutes
 {
@@ -212,6 +213,10 @@ namespace BigSister.Mutes
                 DiscordMember member = await ctx.Guild.GetMemberAsync(mute.User);
                 DiscordRole role = ctx.Guild.GetRole(Program.Settings.MuteRoleID[mute.Guild]);
                 await member.GrantRoleAsync(role);
+                await member.ModifyAsync(delegate (MemberEditModel user)
+                {
+                    user.VoiceChannel = null;
+                });
 
                 //Lets check if there's a longer mute or not first
                 Mute old_mute;
@@ -242,35 +247,29 @@ namespace BigSister.Mutes
                 // Check if it's default aka nothing found (for some reason)
                 if (!old_mute.Equals(default(Mute)))
                 {
-                    //if we're here, there's an old mute
-                    if (old_mute.Time >= mute.Time) //existing mute is longer, don't track new in DB
+                    // If we're here, there's an old mute
+                    // We're overriding it, aka deleting any pre-existing ones
+                    // Let's build the command.
+                    using var remove_command = new SqliteCommand(BotDatabase.Instance.DataSource)
                     {
-                        noTrack = true;
-                        note = "\nNote: Overridden by longer mute";
-                    }
-                    else //existing mute is shorter, we're overriding it, aka deleting any pre-existing ones
+                        CommandText = QQ_UserRemoveMute
+                    };
+
+                    SqliteParameter aaa = new SqliteParameter("$userid", targetUser.Id)
                     {
-                        // Let's build the command.
-                        using var remove_command = new SqliteCommand(BotDatabase.Instance.DataSource)
-                        {
-                            CommandText = QQ_UserRemoveMute
-                        };
+                        DbType = DbType.String
+                    };
+                    SqliteParameter bbb = new SqliteParameter("$guild", ctx.Guild.Id)
+                    {
+                        DbType = DbType.String
+                    };
 
-                        SqliteParameter aaa = new SqliteParameter("$userid", targetUser.Id)
-                        {
-                            DbType = DbType.String
-                        };
-                        SqliteParameter bbb = new SqliteParameter("$guild", ctx.Guild.Id)
-                        {
-                            DbType = DbType.String
-                        };
+                    remove_command.Parameters.AddRange(new SqliteParameter[] { aaa, bbb });
 
-                        remove_command.Parameters.AddRange(new SqliteParameter[] { aaa, bbb });
+                    // and run it
+                    await BotDatabase.Instance.ExecuteNonQuery(remove_command);
+                    note = "\nNote: Overriding previous mute";
 
-                        // and run it
-                        await BotDatabase.Instance.ExecuteNonQuery(remove_command);
-                        note = "\nNote: Extending shorter mute";
-                    }
                 }
 
 
@@ -771,15 +770,14 @@ namespace BigSister.Mutes
                             /*2*/ lateBy.Minutes,
                             /*3*/ lateBy.Seconds));
 
-
-                    DiscordGuild guild = await Program.BotClient.GetGuildAsync(mute.Guild);
-                    if (guild.Members.ContainsKey(mute.User))
+                    try
                     {
+                        DiscordGuild guild = await Program.BotClient.GetGuildAsync(mute.Guild);
                         DiscordMember member = await guild.GetMemberAsync(mute.User);
                         DiscordRole role = guild.GetRole(Program.Settings.MuteRoleID[mute.Guild]);
                         await member.RevokeRoleAsync(role);
                     }
-                    else
+                    catch(Exception e)
                     {
                         deb.AddField("Note", value: "User has left the server");
                     }
