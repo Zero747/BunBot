@@ -57,7 +57,7 @@ namespace BigSister.Mutes
         static readonly Regex DateRegex
             = new Regex(@"(\d+)\s?(months?|days?|d|weeks?|wks?|w|hours?|hrs?|h|minutes?|mins?|m)",
                 RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.Singleline);
-        public static async Task AddMute(CommandContext ctx, DiscordMember targetUser, string args)
+        public static async Task AddMute(CommandContext ctx, ulong targetUser, string args)
         {   // Firstly get all the matches.
             MatchCollection regexMatches = DateRegex.Matches(args);
             BitArray regexCoverage = new BitArray(args.Length);
@@ -205,22 +205,37 @@ namespace BigSister.Mutes
                     originalMessageId: ctx.Message.Id.ToString(),
                     text: messageString.Length.Equals(0) ? @"n/a" : messageString.ToString(),
                     time: (int)(dto.ToUnixTimeSeconds() / 60),
-                    user: targetUser.Id,
+                    user: targetUser,
                     guild: ctx.Guild.Id
                     );
-
-                // add muted role to listed user, won't break anything if it's already there
-                DiscordMember member = await ctx.Guild.GetMemberAsync(mute.User);
-                DiscordRole role = ctx.Guild.GetRole(Program.Settings.MuteRoleID[mute.Guild]);
-                await member.GrantRoleAsync(role);
-                await member.ModifyAsync(delegate (MemberEditModel user)
+                string note = "";
+                try
                 {
-                    user.VoiceChannel = null;
-                });
+                    // add muted role to listed user, won't break anything if it's already there
+                    DiscordMember member = await ctx.Guild.GetMemberAsync(mute.User); // If the member isn't present, this should fail, ignoring everything onwards, this is possible if we grabbed a messageID instead of a userID
+                    DiscordRole role = ctx.Guild.GetRole(Program.Settings.MuteRoleID[mute.Guild]);
+                    await member.GrantRoleAsync(role);
+                    
+                    try
+                    {
+                        await member.ModifyAsync(delegate (MemberEditModel user)
+                        {
+                            user.VoiceChannel = null;
+                        });
+                    }
+                    catch (Exception e)
+                    {
+                        note += "\nNote: I was unable to remove the user from the voice channel they were in, do I have perms in that channel?";
+                    }
+                }
+                catch (Exception e)
+                {
+                    note += "\nNote: User wasn't found in the server, it's possible they left the server before the mute, check that you didn't copy a message id!";
+                    // The purpose of catching this is because it's very possible the user has left the server just prior to the mute, and we should treat it as a genuine user anyway so they can be automatically muted if they decide to rejoin
+                }
 
                 //Lets check if there's a longer mute or not first
                 Mute old_mute;
-                string note = "";
 
                 // Let's build the command.
                 using var check_command = new SqliteCommand(BotDatabase.Instance.DataSource)
@@ -228,7 +243,7 @@ namespace BigSister.Mutes
                     CommandText = QQ_GetUserMute
                 };
 
-                SqliteParameter aa = new SqliteParameter("$userid", targetUser.Id)
+                SqliteParameter aa = new SqliteParameter("$userid", targetUser)
                 {
                     DbType = DbType.String
                 };
@@ -255,7 +270,7 @@ namespace BigSister.Mutes
                         CommandText = QQ_UserRemoveMute
                     };
 
-                    SqliteParameter aaa = new SqliteParameter("$userid", targetUser.Id)
+                    SqliteParameter aaa = new SqliteParameter("$userid", targetUser)
                     {
                         DbType = DbType.String
                     };
@@ -268,7 +283,7 @@ namespace BigSister.Mutes
 
                     // and run it
                     await BotDatabase.Instance.ExecuteNonQuery(remove_command);
-                    note = "\nNote: Overriding previous mute";
+                    note += "\nNote: Overriding previous mute";
 
                 }
 
