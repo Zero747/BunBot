@@ -38,7 +38,12 @@ namespace BigSister.Admission
             }
             else //assign role
             {
+                DateTimeOffset cutoffDate = new DateTimeOffset(e.Message.CreationTimestamp.UtcDateTime).AddDays(-14);
                 DiscordRole colonistRole = e.Guild.GetRole(934494665539993611);
+                if (GetJoinedDiscordTime(e.Author.Id) >= cutoffDate)
+                {
+                    colonistRole = e.Guild.GetRole(1291125653999058955); // If the account is less than 2 weeks old from creation of the message, we are giving them a separate role to prevent giving new alt accounts certain role perms.
+                }
                 //only do if not colonist
                 if (!user.Roles.Contains(colonistRole))
                 {
@@ -50,7 +55,20 @@ namespace BigSister.Admission
 
         }
 
+        private static async Task AdmitActiveUser(GuildMemberUpdateEventArgs e)
+        {
+            var roleList = e.RolesAfter.Except(e.RolesBefore).ToList();
+            var user = e.Member;
 
+            var newColonistRole = e.Guild.GetRole(934494665539993611);
+            var oldColonistRole = e.Guild.GetRole(1291125653999058955);
+
+            if (roleList.Contains(e.Guild.GetRole(793924952465735700)) && !user.Roles.Contains(newColonistRole)) // If user has been given the Level 10 role and doesn't already have colonist, run the following
+            {
+                await user.GrantRoleAsync(newColonistRole);
+                await user.RevokeRoleAsync(oldColonistRole);
+            }
+        }
 
         internal static async Task BotClient_MessageCreated(DiscordClient botClient, MessageCreateEventArgs e)
         {
@@ -61,5 +79,17 @@ namespace BigSister.Admission
             }
         }
 
+        internal static async Task BotClient_GuildMemberUpdated(DiscordClient botClient, GuildMemberUpdateEventArgs e)
+        {
+            if(e.RolesAfter.Count - e.RolesBefore.Count > 0)
+            {
+                await AdmitActiveUser(e);
+            }
+        }
+
+        private static DateTimeOffset GetJoinedDiscordTime(ulong id)
+        {
+            return DateTimeOffset.FromUnixTimeMilliseconds((long)(id >> 22) + 1420070400000);
+        }
     }
 }

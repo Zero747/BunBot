@@ -87,7 +87,7 @@ namespace BigSister
             // ----------------
             // Admit
             botClient.MessageCreated += Admission.Admission.BotClient_MessageCreated;
-
+            botClient.GuildMemberUpdated += Admission.Admission.BotClient_GuildMemberUpdated;
 
             // ----------------
             // Reminder timer
