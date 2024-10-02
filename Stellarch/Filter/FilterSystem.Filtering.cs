@@ -6,6 +6,8 @@
 
 
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -41,7 +43,7 @@ namespace BigSister.Filter
         {
             // Only continue if the channel isn't excluded, if the sender isn't the bot, if this isn't sent in PMs, if this wasn't due to an embed, and if this isn't due to a
             // system messages e.g. message pinned, member joins, 
-            if (!Program.Settings.ExcludedChannels.Contains(e.Channel.Id) &&
+            if (!Program.Settings.ExcludedChannels.Contains((ulong)(e.Channel.IsThread ? e.Channel.ParentId : e.Channel.Id)) &&
                !e.Channel.IsPrivate &&
                !e.Author.IsCurrent &&
                 (e.Message.MessageType == MessageType.Default || e.Message.MessageType == MessageType.Reply) && (e.MessageBefore.Content != e.Message.Content))
@@ -97,10 +99,11 @@ namespace BigSister.Filter
 
                     if (mc.Count > 0)
                     {
+                        var matches = new List<Match>(mc.OrderBy(x => x.Index)); // This is so we get a match list sorted based on the position of the matching text, this prevents annotation issues such as "ma%tched text  %"
                         // Let's check every bad word
-                        for (int i = 0; i < mc.Count; i++)
+                        for (int i = 0; i < matches.Count; i++)
                         {
-                            Match match = mc[i];
+                            Match match = matches[i];
                             string badWord = match.Value;
                             int badWordIndex = match.Index;
 
