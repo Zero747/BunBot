@@ -6,6 +6,8 @@
 
 
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -41,7 +43,7 @@ namespace BigSister.Filter
         {
             // Only continue if the channel isn't excluded, if the sender isn't the bot, if this isn't sent in PMs, if this wasn't due to an embed, and if this isn't due to a
             // system messages e.g. message pinned, member joins, 
-            if (!Program.Settings.ExcludedChannels.Contains(e.Channel.Id) &&
+            if (!Program.Settings.ExcludedChannels.Contains((ulong)(e.Channel.IsThread ? e.Channel.ParentId : e.Channel.Id)) &&
                !e.Channel.IsPrivate &&
                !e.Author.IsCurrent &&
                 (e.Message.MessageType == MessageType.Default || e.Message.MessageType == MessageType.Reply) && (e.MessageBefore.Content != e.Message.Content))
@@ -85,42 +87,45 @@ namespace BigSister.Filter
         public static List<string> GetBadWords(string message, out string notatedMessage)
         {
             var returnVal = new List<string>(); // Our sentinel value for no bad word is an empty List<string>.
-            var stringBuilder = new StringBuilder(message); // Notated message string builder
+
+            Regex ansiRegex = new Regex($"\u001b\\[[\\d;]+m", RegexOptions.IgnoreCase);
+            message = ansiRegex.Replace(message, ""); // This just strips all ansi color codes from the message before we add our own
 
             if (MaskCache.Length > 0)
             {
-                int annoteSymbolsAdded = 0; // The number of annotation symbols added.
-
                 foreach (Regex regexPattern in FilterRegex)
                 {
                     MatchCollection mc = regexPattern.Matches(message);
 
                     if (mc.Count > 0)
                     {
+                        int annoteSymbolsOffset = 0; // The amount a position should be shifted per text insertion operation.
+                        var matches = new List<Match>(mc.ToList()); // This is so we get a match list sorted based on the position of the matching text, this prevents annotation issues such as "ma%tched text  %"
                         // Let's check every bad word
-                        for (int i = 0; i < mc.Count; i++)
+                        for (int i = 0; i < matches.Count; i++)
                         {
-                            Match match = mc[i];
+                            Match match = matches[i];
                             string badWord = match.Value;
                             int badWordIndex = match.Index;
 
                             if (!IsExcluded(message, badWord, badWordIndex))
                             {
                                 returnVal.Add(badWord);
-
-                                stringBuilder.Insert(badWordIndex + annoteSymbolsAdded++, '%');
-                                stringBuilder.Insert(badWordIndex + badWord.Length + annoteSymbolsAdded++, '%');
+                                message = message.Insert(badWordIndex + annoteSymbolsOffset, "\u001b[2;35m");
+                                annoteSymbolsOffset += 7;
+                                message = message.Insert(badWordIndex + badWord.Length + annoteSymbolsOffset, "\u001b[0m");
+                                annoteSymbolsOffset += 4; // This all ensures that the ansi color codes are properly added to the correct position in text
                             } // end if
                         } // end for
                     } // end if
                 } // end foreach
             } // end if
 
-            notatedMessage = stringBuilder.ToString();
+            notatedMessage = message;
 
             // If the notated message is over 1500 characters, let's cut it down a little bit. I don't want to wait until 2,000 characters
             // specifically because imo that's risking it.
-            if (stringBuilder.Length > 1500)
+            if (message.Length > 1500)
             {
                 notatedMessage = $"{notatedMessage.Substring(0, 1500)}...\n**message too long to preview.**";
             }

@@ -34,7 +34,7 @@ namespace BigSister.MentionSnooper
                     // Get the DiscordMember of each user.
 
                     var mentionedColonistIds = new List<ulong>();
-
+                    
                     foreach (var user in GetMessageMentions(e.Message.Content))
                     {
                         try
@@ -282,7 +282,10 @@ namespace BigSister.MentionSnooper
         private static bool MentionedUsersContains(DiscordMessage message, ulong memberId)
         {
             bool returnVal = false;
+            Regex searchRegex = new Regex($"<@!?{memberId}>", RegexOptions.IgnoreCase);
+            returnVal = searchRegex.IsMatch(message.Content); // Yes this is all extremely lazy, yet somehow I feel this will work better, this will (hopefully) work regardless of whether the user is present in the server
 
+            /* I'm not sure whether this stuff should stay as I'll be going about it in a completely different way above, I will keep it if the above doesn't work the way I expect
             if (message.MentionedUsers.Count() > 0)
             {
                 foreach (var user in message.MentionedUsers)
@@ -304,7 +307,11 @@ namespace BigSister.MentionSnooper
                         returnVal = user.Id == memberId;
                     } // end else
                 } // end foreach
+                
             } // end if
+            */
+
+
 
             return returnVal;
         } // end method

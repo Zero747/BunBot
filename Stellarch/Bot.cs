@@ -154,8 +154,8 @@ namespace BigSister
                 Color = DiscordColor.Red
             };
 
-            deb.WithDescription(String.Format("Filter Trigger(s):```{0}```Excerpt:```{1}```",
-                stringBuilder.ToString(), e.NotatedMessage));
+            deb.WithDescription(String.Format("Filter Trigger(s):```{0}```Excerpt:```ansi\n{1}```",
+                stringBuilder.ToString().Replace("`", "\\`"), e.NotatedMessage.Replace("`", "\\`")));
 
             deb.AddField(@"Author ID", e.User.Id.ToString(), inline: true);
             deb.AddField(@"Author Username", $"{e.User.Username}#{e.User.Discriminator}", inline: true);
