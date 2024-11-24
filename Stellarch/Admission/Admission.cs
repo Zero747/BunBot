@@ -15,8 +15,9 @@ namespace BigSister.Admission
 {
     public static class Admission
     {
-        
 
+        private static List<ulong> newDiscordUsers = new List<ulong>();
+        private static List<ulong> alreadyCheckedUsers = new List<ulong>();
         private static async Task AdmitUser(MessageCreateEventArgs e)
         {
             //check channel
@@ -39,10 +40,15 @@ namespace BigSister.Admission
             else //assign role
             {
                 DateTimeOffset cutoffDate = user.JoinedAt.AddDays(-30);
+                bool userAlreadyEnteredBefore = newDiscordUsers.Contains(user.Id); // If the user already entered once within a month of account creation date
 
                 DiscordRole colonistRole;
-                if(user.CreationTimestamp >= cutoffDate)
+                if(user.CreationTimestamp >= cutoffDate || userAlreadyEnteredBefore)
                 {
+                    if(!userAlreadyEnteredBefore)
+                    {
+                        newDiscordUsers.Add(user.Id);
+                    }
                     colonistRole = e.Guild.GetRole(1291125653999058955); // If the account is less than a month old after joining the discord, we are giving them a separate role to prevent giving new alt accounts certain role perms.
                 }
                 else
@@ -62,17 +68,23 @@ namespace BigSister.Admission
 
         private static async Task AdmitActiveUser(GuildMemberUpdateEventArgs e)
         {
-            var roleList = e.RolesAfter.Except(e.RolesBefore).ToList();
             var user = e.Member;
-
             var newColonistRole = e.Guild.GetRole(934494665539993611);
             var oldColonistRole = e.Guild.GetRole(1291125653999058955);
             var levelRole = e.Guild.GetRole(793924952465735700);
 
-            if (roleList.Contains(levelRole) && !user.Roles.Contains(newColonistRole)) // If user has been given the Level 10 role and doesn't already have colonist, run the following
+            if (user.Roles.Contains(levelRole) && !user.Roles.Contains(newColonistRole)) // If user has been given the Level 10 role and doesn't already have colonist, run the following.
             {
                 await user.GrantRoleAsync(newColonistRole);
-                await user.RevokeRoleAsync(oldColonistRole);
+                if(user.Roles.Contains(oldColonistRole))
+                {
+                    await user.RevokeRoleAsync(oldColonistRole);
+                }
+                alreadyCheckedUsers.Add(user.Id); // We don't want them to be checked again as that needs more requests to be sent (though the roles should really be cached)
+            }
+            else if (user.Roles.Contains(newColonistRole))
+            {
+                alreadyCheckedUsers.Add(user.Id);
             }
         }
 
@@ -89,13 +101,11 @@ namespace BigSister.Admission
         {
             if(e.RolesAfter.Count - e.RolesBefore.Count > 0)
             {
-                await AdmitActiveUser(e);
+                if(!alreadyCheckedUsers.Contains(e.Member.Id)) // If the user already given the normal colonist role (on this bot session), don't check again.
+                {
+                    await AdmitActiveUser(e);
+                }
             }
-        }
-
-        private static DateTimeOffset GetJoinedDiscordTime(ulong id)
-        {
-            return DateTimeOffset.FromUnixTimeMilliseconds((long)(id >> 22) + 1420070400000);
         }
     }
 }
