@@ -19,7 +19,38 @@ namespace BigSister.Commands
     {
         private string GetEnabledDisabled(bool a)
             => a ? @"enabled" : @"disabled";
+        #region Admission
+        [Command("admission-enabled"), MinimumRole(Role.BotManager)]
+        public async Task AdmissionEnabled(CommandContext ctx, bool enabled)
+        {
+            if (await Permissions.HandlePermissionsCheck(ctx))
+            {
+                Program.UpdateSettings(ref Program.Settings.AdmissionEnabled, enabled);
 
+                string a = GetEnabledDisabled(enabled);
+                await GenericResponses.SendMessageSettingChanged(
+                    channel: ctx.Channel,
+                    mention: ctx.Member.Mention,
+                    title: $"Admission {a}",
+                    valueName: @"Admission",
+                    newVal: a);
+            }
+        }
+        [Command("admission-day-threshold"), MinimumRole(Role.BotManager)]
+        public async Task AdmissionDayThreshold(CommandContext ctx, int daysInt)
+        {
+            if (await Permissions.HandlePermissionsCheck(ctx))
+            {
+                Program.UpdateSettings(ref Program.Settings.DaysSinceCreation, daysInt);
+                await GenericResponses.SendMessageSettingChanged(
+                    channel: ctx.Channel,
+                    mention: ctx.Member.Mention,
+                    title: @"Admission colonist day threshold changed",
+                    valueName: @"admission colonist day threshold",
+                    newVal: daysInt.ToString());
+            }
+        }
+        #endregion
         #region Filter
 
         [Command("excluded-channels"), MinimumRole(Role.BotManager)]
