@@ -111,7 +111,7 @@ namespace BigSister.Filter
                             if (!IsExcluded(message, badWord, badWordIndex))
                             {
                                 returnVal.Add(badWord);
-                                message = message.Insert(badWordIndex + annoteSymbolsOffset, "\u001b[2;35m");
+                                message = message.Insert(badWordIndex + annoteSymbolsOffset, "\u001b[4;35m");
                                 annoteSymbolsOffset += 7;
                                 message = message.Insert(badWordIndex + badWord.Length + annoteSymbolsOffset, "\u001b[0m");
                                 annoteSymbolsOffset += 4; // This all ensures that the ansi color codes are properly added to the correct position in text
@@ -123,11 +123,10 @@ namespace BigSister.Filter
 
             notatedMessage = message;
 
-            // If the notated message is over 1500 characters, let's cut it down a little bit. I don't want to wait until 2,000 characters
-            // specifically because imo that's risking it.
-            if (message.Length > 1500)
+            // If the notated message is over 950 characters, let's cut it down a little bit. ANSI color coding does not work above 1000 characters, and the following additional text is 48 characters
+            if (message.Length > 950)
             {
-                notatedMessage = $"{notatedMessage.Substring(0, 1500)}...\n**message too long to preview.**";
+                notatedMessage = $"{notatedMessage.Substring(0, 950)}\u001b[2;31m...\nMessage is too long to preview.\u001b[0m";
             }
 
             return returnVal;
