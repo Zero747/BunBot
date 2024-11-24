@@ -21,7 +21,7 @@ namespace BigSister.Admission
         private static async Task AdmitUser(MessageCreateEventArgs e)
         {
             //check channel
-            if(e.Channel.Id != 410118895526084609 || e.Author.IsBot) { // hardcoded barracks ID cause I'm lazy
+            if(!Program.Settings.AdmissionEnabled || e.Channel.Id != 410118895526084609 || e.Author.IsBot) { // hardcoded barracks ID cause I'm lazy
                 return;
             }
 
@@ -39,7 +39,7 @@ namespace BigSister.Admission
             }
             else //assign role
             {
-                DateTimeOffset cutoffDate = user.JoinedAt.AddDays(-30);
+                DateTimeOffset cutoffDate = user.JoinedAt.AddDays(-Program.Settings.DaysSinceCreation);
                 bool userAlreadyEnteredBefore = newDiscordUsers.Contains(user.Id); // If the user already entered once within a month of account creation date
 
                 DiscordRole colonistRole;
