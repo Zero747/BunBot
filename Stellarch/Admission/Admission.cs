@@ -20,7 +20,7 @@ namespace BigSister.Admission
         private static async Task AdmitUser(MessageCreateEventArgs e)
         {
             //check channel
-            if(!(e.Channel.Id == 410118895526084609)) { // hardcoded barracks ID cause I'm lazy
+            if(e.Channel.Id != 410118895526084609 || e.Author.IsBot) { // hardcoded barracks ID cause I'm lazy
                 return;
             }
 
@@ -38,11 +38,16 @@ namespace BigSister.Admission
             }
             else //assign role
             {
-                DateTimeOffset cutoffDate = new DateTimeOffset(e.Message.CreationTimestamp.UtcDateTime).AddDays(-14);
-                DiscordRole colonistRole = e.Guild.GetRole(934494665539993611);
-                if (GetJoinedDiscordTime(e.Author.Id) >= cutoffDate)
+                DateTimeOffset cutoffDate = user.JoinedAt.AddDays(-30);
+
+                DiscordRole colonistRole;
+                if(user.CreationTimestamp >= cutoffDate)
                 {
-                    colonistRole = e.Guild.GetRole(1291125653999058955); // If the account is less than 2 weeks old from creation of the message, we are giving them a separate role to prevent giving new alt accounts certain role perms.
+                    colonistRole = e.Guild.GetRole(1291125653999058955); // If the account is less than a month old after joining the discord, we are giving them a separate role to prevent giving new alt accounts certain role perms.
+                }
+                else
+                {
+                    colonistRole = e.Guild.GetRole(934494665539993611);
                 }
                 //only do if not colonist
                 if (!user.Roles.Contains(colonistRole))
@@ -62,8 +67,9 @@ namespace BigSister.Admission
 
             var newColonistRole = e.Guild.GetRole(934494665539993611);
             var oldColonistRole = e.Guild.GetRole(1291125653999058955);
+            var levelRole = e.Guild.GetRole(793924952465735700);
 
-            if (roleList.Contains(e.Guild.GetRole(793924952465735700)) && !user.Roles.Contains(newColonistRole)) // If user has been given the Level 10 role and doesn't already have colonist, run the following
+            if (roleList.Contains(levelRole) && !user.Roles.Contains(newColonistRole)) // If user has been given the Level 10 role and doesn't already have colonist, run the following
             {
                 await user.GrantRoleAsync(newColonistRole);
                 await user.RevokeRoleAsync(oldColonistRole);
