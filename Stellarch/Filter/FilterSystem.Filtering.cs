@@ -112,9 +112,9 @@ namespace BigSister.Filter
                             {
                                 returnVal.Add(badWord);
                                 message = message.Insert(badWordIndex + annoteSymbolsOffset, "\u001b[4;35m");
-                                annoteSymbolsOffset += 6;
+                                annoteSymbolsOffset += 7;
                                 message = message.Insert(badWordIndex + badWord.Length + annoteSymbolsOffset, "\u001b[0m");
-                                annoteSymbolsOffset += 3; // This all ensures that the ansi color codes are properly added to the correct position in text
+                                annoteSymbolsOffset += 4; // This all ensures that the ansi color codes are properly added to the correct position in text
                             } // end if
                         } // end for
                     } // end if
