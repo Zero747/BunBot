@@ -112,9 +112,9 @@ namespace BigSister.Filter
                             {
                                 returnVal.Add(badWord);
                                 message = message.Insert(badWordIndex + annoteSymbolsOffset, "\u001b[4;35m");
-                                annoteSymbolsOffset += 7;
+                                annoteSymbolsOffset += 6;
                                 message = message.Insert(badWordIndex + badWord.Length + annoteSymbolsOffset, "\u001b[0m");
-                                annoteSymbolsOffset += 4; // This all ensures that the ansi color codes are properly added to the correct position in text
+                                annoteSymbolsOffset += 3; // This all ensures that the ansi color codes are properly added to the correct position in text
                             } // end if
                         } // end for
                     } // end if
@@ -122,9 +122,9 @@ namespace BigSister.Filter
             } // end if
 
             notatedMessage = message;
-
+            notatedMessage = Regex.Replace(notatedMessage, "\\p{Cf}", ""); // Some people deliberately toss in control characters which can massively increase character count without taking up any space, this should hopefully remove a lot of the control characters being abused
             // If the notated message is over 950 characters, let's cut it down a little bit. ANSI color coding does not work above 1000 characters, and the following additional text is 48 characters
-            if (message.Length > 950)
+            if (notatedMessage.Length > 950)
             {
                 notatedMessage = $"{notatedMessage.Substring(0, 950)}\u001b[2;31m...\nMessage is too long to preview.\u001b[0m";
             }
