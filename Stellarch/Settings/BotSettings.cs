@@ -18,7 +18,10 @@ namespace BigSister.Settings
         const ulong DEFAULT_CHANNEL = 564290158078197781;
 
         public BotSettings() { }
-
+        // ----------------
+        // Admission
+        public bool AdmissionEnabled = true;
+        public int DaysSinceCreation = 14;
         // ----------------
         // Filter
 
