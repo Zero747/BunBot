@@ -340,3 +340,8 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
+
+Stellarch/sav/identity0*
+Stellarch/sav/log.txt
+Stellarch/sav/settings.json*
+Stellarch/sav/database.db
